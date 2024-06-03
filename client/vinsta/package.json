@@ -1,11 +1,13 @@
 {
   "name": "vinsta",
+  "version": "1.0.0",
   "bin": {
     "vinsta": "./out/index.js"
   },
   "vinsta": "link:vinsta",
   "scripts": {
-    "build": "bun build --target=node ./index.ts --outdir ./out"
+    "build": "bun build --target=node ./index.ts --outdir ./out",
+    "start": "bun out/index.js"
   },
   "module": "./out/index.js",
   "type": "module",
@@ -18,11 +20,13 @@
     "typescript": "^5.0.0"
   },
   "dependencies": {
+    "@types/semver": "^7.5.8",
     "axios": "^1.7.2",
     "commander": "^12.1.0",
     "express": "^4.19.2",
     "figlet": "^1.7.0",
     "inquirer": "^9.2.23",
+    "semver": "^7.6.2",
     "vinsta": "."
   }
 }
