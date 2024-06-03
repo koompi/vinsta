@@ -4,13 +4,13 @@ import { Command } from "commander";
 import inquirer from "inquirer";
 import { createVirtualMachine, stopVirtualMachine, startVirtualMachine,
    removeVirtualMachine, checkInfoVirtualMachine, sshVirtualMachine,
-   listallVirtualMachine, initVinsta } from "./cmd";
+   listallVirtualMachine, initVinsta, updateVinsta } from "./cmd";
 
 const figlet = require("figlet");
 
 const program = new Command();
 
-console.log(figlet.textSync("Vinsta"));
+// console.log(figlet.textSync("Vinsta"));
 
 program
   .version("1.0.0")
@@ -22,6 +22,7 @@ program
   .option("-r, --remove", "Remove a virtual machine")
   .option("-k, --check", "Check information of a virtual machine")
   .option("-l, --listall", "List all of the available virtual machine")
+  .option("-u, --update", "Update Vinsta to the latest version")
   .parse(process.argv);
 
 const options = program.opts();
@@ -81,6 +82,9 @@ if (process.argv.length <= 2) {
   }
   if (options.listall) {
     listallVirtualMachine();
+  }
+  if (options.update) {
+    updateVinsta();
   }
   if (options.config) {
     listallVirtualMachine();
