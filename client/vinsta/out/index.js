@@ -53296,7 +53296,7 @@ var require_figlet = __commonJS((exports, module) => {
 
 // node_modules/figlet/lib/node-figlet.js
 var require_node_figlet = __commonJS((exports, module) => {
-  var __dirname = "/home/keav-hyper/instance-maker/vinsta/client/vinsta/node_modules/figlet/lib";
+  var __dirname = "/kmp/vinsta/client/vinsta/node_modules/figlet/lib";
   var figlet = require_figlet();
   var fs3 = import.meta.require("fs");
   var path3 = import.meta.require("path");
@@ -58978,6 +58978,7 @@ async function removeVirtualMachine() {
   }
 }
 // cmd/checkinfoVirtualMachine.ts
+var import_ora7 = __toESM(require_ora(), 1);
 async function checkInfoVirtualMachine() {
   const answers = await inquirer_default.prompt([
     {
@@ -58987,7 +58988,35 @@ async function checkInfoVirtualMachine() {
       default: "koompi-vm-1"
     }
   ]);
-  console.log(`Virtual machine "${answers.name}" information checked`);
+  const spinner = import_ora7.default("Sending request...").start();
+  const serverConfig = getServerConfig();
+  if (!serverConfig) {
+    return;
+  }
+  const { host, port } = serverConfig;
+  const url2 = `http://${host}:${port}/api/checkinfo`;
+  try {
+    const response2 = await axios_default.post(url2, answers, {
+      headers: {
+        "Content-Type": "application/json"
+      }
+    });
+    if (response2.data.message === "Information of the instance") {
+      spinner.succeed("Virtual machine successfully checked");
+    } else {
+      spinner.fail("Failed to stop virtual machine");
+      console.error("Server response:", response2.data);
+    }
+  } catch (error) {
+    spinner.fail("Error sending request to the server");
+    if (error.response) {
+      console.error("Server responded with an error:", error.response.status, error.response.data);
+    } else if (error.request) {
+      console.error("No response received from the server:", error.request);
+    } else {
+      console.error("Error sending request to the server:", error.message);
+    }
+  }
 }
 // cmd/listallVirtualMachine.ts
 async function listallVirtualMachine() {
@@ -59027,14 +59056,14 @@ async function initVinsta() {
   fs2.writeFileSync(envFilePath, envContent);
   console.log("Initialization state saved to " + envFilePath);
 }
-var __filename = "/home/keav-hyper/instance-maker/vinsta/client/vinsta/cmd/initVinsta.ts";
+var __filename = "/kmp/vinsta/client/vinsta/cmd/initVinsta.ts";
 if (process.argv[1] === __filename) {
   initVinsta().catch((error) => {
     console.error("Error during initialization:", error);
   });
 }
 // cmd/sshVirtualMachine.ts
-var import_ora7 = __toESM(require_ora(), 1);
+var import_ora8 = __toESM(require_ora(), 1);
 import {spawn} from "child_process";
 async function sshVirtualMachine() {
   try {
@@ -59059,7 +59088,7 @@ async function sshVirtualMachine() {
         mask: "*"
       }
     ]);
-    const spinner = import_ora7.default("Sending request...").start();
+    const spinner = import_ora8.default("Sending request...").start();
     const serverConfig = getServerConfig();
     if (!serverConfig) {
       throw new Error("Failed to load server configuration.");
@@ -59091,7 +59120,7 @@ async function sshVirtualMachine() {
       console.error("Server response:", response2.data);
     }
   } catch (error) {
-    import_ora7.default().fail("An error occurred");
+    import_ora8.default().fail("An error occurred");
     if (error.response) {
       console.error("Server responded with an error:", error.response.status, error.response.data);
     } else if (error.request) {
@@ -59102,7 +59131,7 @@ async function sshVirtualMachine() {
   }
 }
 // cmd/updateVinsta.ts
-var import_ora8 = __toESM(require_ora(), 1);
+var import_ora9 = __toESM(require_ora(), 1);
 var import_semver = __toESM(require_semver2(), 1);
 import {execSync} from "child_process";
 async function getLocalVersion() {
@@ -59124,7 +59153,7 @@ async function getRemoteVersion() {
 }
 async function updateVinsta() {
   try {
-    const spinner = import_ora8.default("Checking for updates...").start();
+    const spinner = import_ora9.default("Checking for updates...").start();
     const localVersion = await getLocalVersion();
     const remoteVersion = await getRemoteVersion();
     console.log(remoteVersion);
@@ -59137,14 +59166,14 @@ async function updateVinsta() {
       spinner.succeed("Vinsta is already up to date.");
     }
   } catch (error) {
-    import_ora8.default().fail("An error occurred while updating Vinsta");
+    import_ora9.default().fail("An error occurred while updating Vinsta");
     console.error("Error:", error.message);
   }
 }
 // index.ts
 var figlet = require_node_figlet();
 var program2 = new Command;
-program2.version("1.0.0").description("Vinsta for managing your virtual machine").option("-i, --init", "Connect to the Vinsta server").option("-c, --create", "Create a new virtual machine").option("-s, --start", "Start a virtual machine").option("-o, --stop", "Stop a virtual machine").option("-r, --remove", "Remove a virtual machine").option("-k, --check", "Check information of a virtual machine").option("-l, --listall", "List all of the available virtual machine").option("-u, --update", "Update Vinsta to the latest version").parse(process.argv);
+program2.version("1.0.1").description("Vinsta for managing your virtual machine").option("-i, --init", "Connect to the Vinsta server").option("-c, --create", "Create a new virtual machine").option("-s, --start", "Start a virtual machine").option("-o, --stop", "Stop a virtual machine").option("-r, --remove", "Remove a virtual machine").option("-k, --check", "Check information of a virtual machine").option("-l, --listall", "List all of the available virtual machine").option("-u, --update", "Update Vinsta to the latest version").parse(process.argv);
 var options = program2.opts();
 var actions = {
   "1. Connect to your Vinsta server": initVinsta,
