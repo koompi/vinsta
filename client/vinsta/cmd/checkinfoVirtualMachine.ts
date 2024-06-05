@@ -32,7 +32,7 @@ export async function checkInfoVirtualMachine() {
     });
 
     // Check if the virtual machine was successfully removed
-    if (response.data.message === "Information of the instance") {
+    if (response.data.message === "Checking info of the virtual machine") {
       spinner.succeed("Virtual machine successfully checked"); // Stop spinner on success
     } else {
       spinner.fail("Failed to stop virtual machine"); // Stop spinner on error
