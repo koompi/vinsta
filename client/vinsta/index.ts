@@ -13,7 +13,7 @@ const program = new Command();
 // console.log(figlet.textSync("Vinsta"));
 
 program
-  .version("1.0.0")
+  .version("1.0.1")
   .description("Vinsta for managing your virtual machine")
   .option("-i, --init", "Connect to the Vinsta server")
   .option("-c, --create", "Create a new virtual machine")
