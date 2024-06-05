@@ -53296,7 +53296,7 @@ var require_figlet = __commonJS((exports, module) => {
 
 // node_modules/figlet/lib/node-figlet.js
 var require_node_figlet = __commonJS((exports, module) => {
-  var __dirname = "/kmp/vinsta/client/vinsta/node_modules/figlet/lib";
+  var __dirname = "/home/keav-hyper/instance-maker/vinsta/client/vinsta/node_modules/figlet/lib";
   var figlet = require_figlet();
   var fs3 = import.meta.require("fs");
   var path3 = import.meta.require("path");
@@ -59001,12 +59001,14 @@ async function checkInfoVirtualMachine() {
         "Content-Type": "application/json"
       }
     });
-    if (response2.data.message === "Information of the instance") {
+    if (response2.data.message === "Checking info of the virtual machine") {
       spinner.succeed("Virtual machine successfully checked");
+      console.log(response2.data);
     } else {
-      spinner.fail("Failed to stop virtual machine");
+      spinner.fail("Failed to check virtual machine");
       console.error("Server response:", response2.data);
     }
+    return response2;
   } catch (error) {
     spinner.fail("Error sending request to the server");
     if (error.response) {
@@ -59056,7 +59058,7 @@ async function initVinsta() {
   fs2.writeFileSync(envFilePath, envContent);
   console.log("Initialization state saved to " + envFilePath);
 }
-var __filename = "/kmp/vinsta/client/vinsta/cmd/initVinsta.ts";
+var __filename = "/home/keav-hyper/instance-maker/vinsta/client/vinsta/cmd/initVinsta.ts";
 if (process.argv[1] === __filename) {
   initVinsta().catch((error) => {
     console.error("Error during initialization:", error);

@@ -1,5 +1,5 @@
 import inquirer from "inquirer";
-import ora from "ora"; 
+import ora from "ora";
 import { getServerConfig } from "../utils/config";
 import axios from "axios";
 
@@ -14,7 +14,7 @@ export async function checkInfoVirtualMachine() {
     },
   ]);
   const spinner = ora("Sending request...").start(); // Start spinner instance
-  
+
   // Read environment variables from $HOME/.vinsta/env
   const serverConfig = getServerConfig();
   if (!serverConfig) {
@@ -34,10 +34,12 @@ export async function checkInfoVirtualMachine() {
     // Check if the virtual machine was successfully removed
     if (response.data.message === "Checking info of the virtual machine") {
       spinner.succeed("Virtual machine successfully checked"); // Stop spinner on success
+      console.log(response.data);
     } else {
-      spinner.fail("Failed to stop virtual machine"); // Stop spinner on error
+      spinner.fail("Failed to check virtual machine"); // Stop spinner on error
       console.error("Server response:", response.data);
     }
+    return response;
   } catch (error: any) {
     spinner.fail("Error sending request to the server"); // Stop spinner on error
     if (error.response) {
