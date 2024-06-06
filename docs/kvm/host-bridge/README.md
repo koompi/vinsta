@@ -1,6 +1,13 @@
 ## Setting up Host Bridge on the host
 
-## Step 1: Create /etc/netplan/01-kvmbridge.yml. Example:
+## Installing Dependencies
+```bash
+sudo pacman -Sy netplan # On ubuntu, Google it
+```
+
+## Step 1: Setting up netplan bridge
+
+Create /etc/netplan/01-kvmbridge.yml. Example:
 
 ```text
 network:
@@ -14,7 +21,7 @@ network:
       mtu: 1500
       parameters:
         stp: true
-        forward-delay: 15
+        forward-delay: 15wwp0s21f0u3i4
 ```
 
 <b>Notes</b>: Network interface should be changed, depending on your ethernet interfaces. Run:
