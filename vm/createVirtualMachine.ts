@@ -12,7 +12,7 @@ interface VMCreationResponse {
 // Function to create virtual machine
 export const createVirtualMachine = async (
   options: VMOptions
-): Promise<{ sshcmd?: string; sshUsername?: string;  sshPassword?: string, }> => {
+): Promise<{ sshcmd?: string; sshUsername?: string; sshPassword?: string, }> => {
   const {
     name,
     iso = "koompi",
@@ -75,9 +75,7 @@ export const createVirtualMachine = async (
       command += " --import";
     }
 
-    // Execute virt-install command
-    // console.log("virt-install command:");
-    // console.log(command);
+
     await executeCommand(command);
 
     // Ensure the VM autostarts
@@ -91,49 +89,24 @@ export const createVirtualMachine = async (
     const ipCommand = `virsh domifaddr ${name}`;
     const ipOutput = await executeCommand(ipCommand);
     const ipAddress = getIPFromCommandOutput(ipOutput);
-    // if (ipAddress) {
-    //   console.log(`IP address of ${name}: ${ipAddress}`);
-    // } else {
-    //   console.log(`No IP address found for ${name}`);
-    // }
 
-    // // Print SSH command if ISO starts with "koompi"
-    // if (ipAddress && iso.startsWith("koompi")) {
-    //   console.log("Now you can ssh into the instance, and install the OS");
-    //   console.log("Username: koompilive");
-    //   console.log("Password: 123");
-    //   console.log(`ssh koompilive@${ipAddress}`);
-    // }
     const sshCommand = ipAddress && iso.startsWith("koompi")
-    ? `ssh koompilive@${ipAddress}`
-    : undefined;
-        // Assign sshCommand to sshcmd
-        const sshcmd = sshCommand;
-        const sshUsername = "koompilive";
+      ? `ssh koompilive@${ipAddress}`
+      : undefined;
+    // Assign sshCommand to sshcmd
+    const sshcmd = sshCommand;
+    const sshUsername = "koompilive";
     const sshPassword = "123";
-  // Return an object containing success message, IP address (if found), and SSH command (if applicable)
-  return {
-    sshcmd,
-    sshUsername,
-    sshPassword,
-  };
+
+    // Return an object containing success message, IP address (if found), and SSH command (if applicable)
+    return {
+      sshcmd,
+      sshUsername,
+      sshPassword,
+    };
 
   } catch (error) {
     console.error("An error occurred:", (error as Error).message);
     throw error;
   }
 };
-
-// Example usage:
-// const vmOptions: VMOptions = {
-//   name: "selendra",
-//   iso: "koompi",
-//   ram: "2048",
-//   disk: "10G",
-//   cpu: "2",
-//   network: "default",
-//   bootOption: 'uefi',
-//   arch: 'x64'
-// };
-
-// createVirtualMachine(vmOptions);

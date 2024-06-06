@@ -18,7 +18,7 @@ export const cloneVirtualMachine = async (options: VMOptionsV2): Promise<void> =
       }
       console.log(stdout); // Optional: Log virt-clone output for debugging
     });
-    
+
     delay(1000);
     // Set the Maximum CPU before set it
     await exec(`virsh setvcpu ${name} ${cpu} --config --maximum`)

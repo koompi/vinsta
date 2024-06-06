@@ -904,7 +904,7 @@ var require_http_errors = __commonJS((exports, module) => {
   populateConstructorExports(module.exports, statuses.codes, module.exports.HttpError);
 });
 
-// node_modules/debug/node_modules/ms/index.js
+// node_modules/ms/index.js
 var require_ms = __commonJS((exports, module) => {
   var parse = function(str) {
     str = String(str);
@@ -22789,18 +22789,14 @@ var checkInfoVirtualMachine = async (options) => {
         usedMemory = parseInt(line.split(":")[1].trim()) / 1048576;
       }
     }
-    const ipCommand = `virsh domifaddr ${name}`;
-    const ipOutput = await executeCommand(ipCommand);
-    if (ipOutput) {
-      ipAddress = getIPFromCommandOutput(ipOutput);
-    } else {
-      ipAddress = "N/A";
-    }
+    const getMacAddrVM = await executeCommand(`virsh domiflist ${name} | awk '\$1=="vnet4"{print \$5}'`);
+    const getIPfromMacVM = `arp -n | grep ${getMacAddrVM.trim()} | awk 'NR==1 {print \$1}'`;
+    const IPAddress = (await executeCommand(getIPfromMacVM)).trim();
     const vmDetails = {
       status: getStatusFromOutput(vmInfoOutput),
       memoryUsage: usedMemory?.toFixed(2) + "MB" || "N/A",
       cpuCores: cpuCount,
-      ipAddress
+      IPAddress
     };
     return {
       message: "Information of the instance",
@@ -22946,7 +22942,7 @@ var vmRoutes_default = router;
 // index.ts
 var import_cors = __toESM(require_lib3(), 1);
 var import_dotenv = __toESM(require_main(), 1);
-var __dirname = "/home/keav-hyper/instance-maker/vinsta";
+var __dirname = "/kmp/vinsta";
 import_dotenv.default.config();
 var app = import_express2.default();
 app.use(import_cors.default());

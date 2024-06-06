@@ -1,0 +1,5 @@
+<network>
+  <name>br20</name>
+  <bridge name="br20" stp="on" delay="0"/>
+  </network>
+

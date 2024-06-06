@@ -84,8 +84,8 @@ export const checkInfoVM = async (req: Request, res: Response) => {
       name: req.body.name || "default_name",
     };
 
-    const stopVM = await checkInfoVirtualMachine(vmOptions);
-    res.status(201).json({ message: "Checking info of the virtual machine", vm: stopVM });
+    const checkVM = await checkInfoVirtualMachine(vmOptions);
+    res.status(201).json({ message: "Checking info of the virtual machine", vm: checkVM });
   } catch (error) {
     console.error("Virtual machine not found:", error);
     res.status(500).json({ message: "Virtual machine not found", error });
