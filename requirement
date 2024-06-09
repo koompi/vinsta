@@ -1,2 +1,3 @@
 edk2-ovmf
 guestfs-tools # Extra DB
+arp-scan # Finding br0 IPv4 address

@@ -2,6 +2,7 @@ import { getIPFromCommandOutput } from "../shells/getIPFromCommandOutput";
 import { delay } from "../utils/delay";
 import type { VMOptions } from "../types/VMOptionsType";
 import { executeCommand } from "../shells/executeCommand";
+import { getIpAddressFromMac } from "../client/vinsta/shells/getIpAddressFromMac";
 
 // Define the type of the object being returned
 interface VMCreationResponse {
@@ -76,19 +77,19 @@ export const createVirtualMachine = async (
     }
 
 
-    await executeCommand(command);
+    executeCommand(command);
+    // Delay for 10 seconds to allow the VM to start up
+    await new Promise(resolve => setTimeout(resolve, 60000));
 
     // Ensure the VM autostarts
     await executeCommand(`virsh autostart ${name}`);
 
     // Delay for 10 seconds to allow the VM to start up
-    await new Promise(resolve => setTimeout(resolve, 10000));
+    // await new Promise(resolve => setTimeout(resolve, 10000));
     // await delay(10000);
 
     // Get the IP address of the VM
-    const ipCommand = `virsh domifaddr ${name}`;
-    const ipOutput = await executeCommand(ipCommand);
-    const ipAddress = getIPFromCommandOutput(ipOutput);
+    const ipAddress = await getIpAddressFromMac(`${name}`)
 
     const sshCommand = ipAddress && iso.startsWith("koompi")
       ? `ssh koompilive@${ipAddress}`
@@ -104,6 +105,8 @@ export const createVirtualMachine = async (
       sshUsername,
       sshPassword,
     };
+    // Return true if creation succeeded
+    // return !!ipAddress;
 
   } catch (error) {
     console.error("An error occurred:", (error as Error).message);

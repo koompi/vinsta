@@ -22576,20 +22576,6 @@ var import_express2 = __toESM(require_express2(), 1);
 // routes/vmRoutes.ts
 var import_express = __toESM(require_express2(), 1);
 
-// shells/getIPFromCommandOutput.ts
-var getIPFromCommandOutput = (output) => {
-  const lines = output.split("\n");
-  const ipv4Line = lines.find((line) => line.includes("ipv4"));
-  if (!ipv4Line) {
-    return;
-  }
-  const ipAddressMatch = ipv4Line.match(/\b(?:\d{1,3}\.){3}\d{1,3}\b/);
-  if (!ipAddressMatch) {
-    return;
-  }
-  return ipAddressMatch[0];
-};
-
 // shells/executeCommand.ts
 import {exec} from "child_process";
 var executeCommand = (command) => {
@@ -22606,6 +22592,42 @@ var executeCommand = (command) => {
       resolve(stdout);
     });
   });
+};
+
+// client/vinsta/shells/executeCommand.ts
+import {exec as exec2} from "child_process";
+var executeCommand2 = (command) => {
+  return new Promise((resolve, reject) => {
+    exec2(command, (error, stdout, stderr) => {
+      if (error) {
+        reject(error);
+        return;
+      }
+      if (stderr) {
+        reject(new Error(stderr));
+        return;
+      }
+      resolve(stdout);
+    });
+  });
+};
+
+// client/vinsta/shells/getIpAddressFromMac.ts
+var getIpAddressFromMac = async (vmName) => {
+  try {
+    const interfaceNameOutput = await executeCommand2(`virsh domiflist ${vmName} | awk '\$2=="bridge" {print \$1}'`);
+    const interfaceName = interfaceNameOutput.trim();
+    if (!interfaceName) {
+      throw new Error(`Bridge interface not found for VM "${vmName}"`);
+    }
+    const getMacAddrVM = await executeCommand2(`virsh domiflist ${vmName} | awk '\$1=="${interfaceName}" {print \$5}'`);
+    const getIPfromMacVM = `arp-scan --localnet --interface br0 | grep ${getMacAddrVM.trim()} | awk 'NR==1 {print \$1 }'`;
+    const ipAddress = (await executeCommand2(getIPfromMacVM)).trim();
+    return ipAddress;
+  } catch (error) {
+    console.error("An error occurred:", error.message);
+    return;
+  }
 };
 
 // vm/createVirtualMachine.ts
@@ -22652,12 +22674,10 @@ var createVirtualMachine = async (options) => {
     } else {
       command += " --import";
     }
-    await executeCommand(command);
+    executeCommand(command);
+    await new Promise((resolve) => setTimeout(resolve, 60000));
     await executeCommand(`virsh autostart ${name}`);
-    await new Promise((resolve) => setTimeout(resolve, 1e4));
-    const ipCommand = `virsh domifaddr ${name}`;
-    const ipOutput = await executeCommand(ipCommand);
-    const ipAddress = getIPFromCommandOutput(ipOutput);
+    const ipAddress = await getIpAddressFromMac(`${name}`);
     const sshCommand = ipAddress && iso.startsWith("koompi") ? `ssh koompilive@${ipAddress}` : undefined;
     const sshcmd = sshCommand;
     const sshUsername = "koompilive";
@@ -22777,11 +22797,18 @@ var checkInfoVirtualMachine = async (options) => {
       console.log("Waiting for VM to start...");
       await delay(1e4);
     }
+    const interfaceNameOutput = await executeCommand(`virsh domiflist ${name} | awk '\$2=="bridge" {print \$1}'`);
+    const interfaceName = interfaceNameOutput.trim();
+    if (!interfaceName) {
+      throw new Error(`Bridge interface not found for VM "${name}"`);
+    }
+    const getMacAddrVM = await executeCommand(`virsh domiflist ${name} | awk '\$1=="${interfaceName}"{print \$5}'`);
+    const getIPfromMacVM = `arp-scan --localnet --interface br0| grep ${getMacAddrVM.trim()} | awk 'NR==1 {print \$1 }'`;
+    const ipAddress = (await executeCommand(getIPfromMacVM)).trim();
     const vmInfoOutput = await executeCommand(`virsh dominfo ${name}`);
     const lines = vmInfoOutput.split("\n");
     let cpuCount;
     let usedMemory;
-    let ipAddress;
     for (const line of lines) {
       if (line.startsWith("CPU(s):")) {
         cpuCount = parseInt(line.split(":")[1].trim());
@@ -22789,14 +22816,11 @@ var checkInfoVirtualMachine = async (options) => {
         usedMemory = parseInt(line.split(":")[1].trim()) / 1048576;
       }
     }
-    const getMacAddrVM = await executeCommand(`virsh domiflist ${name} | awk '\$1=="vnet4"{print \$5}'`);
-    const getIPfromMacVM = `arp -n | grep ${getMacAddrVM.trim()} | awk 'NR==1 {print \$1}'`;
-    const IPAddress = (await executeCommand(getIPfromMacVM)).trim();
     const vmDetails = {
       status: getStatusFromOutput(vmInfoOutput),
       memoryUsage: usedMemory?.toFixed(2) + "MB" || "N/A",
       cpuCores: cpuCount,
-      IPAddress
+      ipAddress
     };
     return {
       message: "Information of the instance",
@@ -22809,12 +22833,12 @@ var checkInfoVirtualMachine = async (options) => {
 };
 
 // vm/cloneVirtualMachine.ts
-import {exec as exec2} from "child_process";
+import {exec as exec3} from "child_process";
 var cloneVirtualMachine = async (options) => {
   const { image = "koompi", name, cpu, ram, disk } = options;
   try {
     console.log(`Creating new VM "${name}" using virt-clone...`);
-    await exec2(`virt-clone --original ${image} --name ${name} --auto-clone`, (error, stdout, stderr) => {
+    await exec3(`virt-clone --original ${image} --name ${name} --auto-clone`, (error, stdout, stderr) => {
       if (error) {
         console.error(`Error cloning VM with virt-clone: ${error.message}`);
         return;
@@ -22822,10 +22846,10 @@ var cloneVirtualMachine = async (options) => {
       console.log(stdout);
     });
     delay(1000);
-    await exec2(`virsh setvcpu ${name} ${cpu} --config --maximum`);
-    await exec2(`virsh setvcpu ${name} ${cpu} --config`);
-    await exec2(`virsh setmaxmem ${name} ${ram} --config --maximum`);
-    await exec2(`virsh setmem ${name} ${ram} --config`);
+    await exec3(`virsh setvcpu ${name} ${cpu} --config --maximum`);
+    await exec3(`virsh setvcpu ${name} ${cpu} --config`);
+    await exec3(`virsh setmaxmem ${name} ${ram} --config --maximum`);
+    await exec3(`virsh setmem ${name} ${ram} --config`);
     console.log(`Configuring new VM with options:`);
     console.log(`Starting the new VM: "${name}"`);
   } catch (error) {
@@ -22902,8 +22926,8 @@ var checkInfoVM = async (req, res) => {
     const vmOptions = {
       name: req.body.name || "default_name"
     };
-    const stopVM2 = await checkInfoVirtualMachine(vmOptions);
-    res.status(201).json({ message: "Checking info of the virtual machine", vm: stopVM2 });
+    const checkVM = await checkInfoVirtualMachine(vmOptions);
+    res.status(201).json({ message: "Checking info of the virtual machine", vm: checkVM });
   } catch (error) {
     console.error("Virtual machine not found:", error);
     res.status(500).json({ message: "Virtual machine not found", error });

@@ -54,7 +54,7 @@ export async function sshVirtualMachine() {
         stdio: "inherit",
       };
 
-      const sshProcess = spawn(sshCommand, [], options);
+      const sshProcess = spawn(sshCommand, [], optis);
       sshProcess.on('close', (code) => {
         if (code === 0) {
           spinner.succeed("Successfully connected to VM");
@@ -64,7 +64,7 @@ export async function sshVirtualMachine() {
         }
       });
     } else {
-      spinner.fail("Failed to check virtual machine");
+      spinner.fail("Failed to ssh into virtual machine");
       console.error("Server response:", response.data);
     }
   } catch (error: any) {
