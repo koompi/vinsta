@@ -53296,7 +53296,7 @@ var require_figlet = __commonJS((exports, module) => {
 
 // node_modules/figlet/lib/node-figlet.js
 var require_node_figlet = __commonJS((exports, module) => {
-  var __dirname = "/home/keav-hyper/instance-maker/vinsta/client/vinsta/node_modules/figlet/lib";
+  var __dirname = "/kmp/vinsta/client/vinsta/node_modules/figlet/lib";
   var figlet = require_figlet();
   var fs3 = import.meta.require("fs");
   var path3 = import.meta.require("path");
@@ -58818,7 +58818,7 @@ async function createVirtualMachine() {
       default: "x64"
     }
   ]);
-  const spinner = import_ora3.default("Sending request...").start();
+  const spinner = import_ora3.default("Creating virtual machine... Please wait. This process may take up to 1 minute.").start();
   const serverConfig = getServerConfig();
   if (!serverConfig) {
     return;
@@ -59058,7 +59058,7 @@ async function initVinsta() {
   fs2.writeFileSync(envFilePath, envContent);
   console.log("Initialization state saved to " + envFilePath);
 }
-var __filename = "/home/keav-hyper/instance-maker/vinsta/client/vinsta/cmd/initVinsta.ts";
+var __filename = "/kmp/vinsta/client/vinsta/cmd/initVinsta.ts";
 if (process.argv[1] === __filename) {
   initVinsta().catch((error) => {
     console.error("Error during initialization:", error);
@@ -59108,7 +59108,7 @@ async function sshVirtualMachine() {
         shell: true,
         stdio: "inherit"
       };
-      const sshProcess = spawn(sshCommand, [], options);
+      const sshProcess = spawn(sshCommand, [], optis);
       sshProcess.on("close", (code) => {
         if (code === 0) {
           spinner.succeed("Successfully connected to VM");
@@ -59118,7 +59118,7 @@ async function sshVirtualMachine() {
         }
       });
     } else {
-      spinner.fail("Failed to check virtual machine");
+      spinner.fail("Failed to ssh into virtual machine");
       console.error("Server response:", response2.data);
     }
   } catch (error) {
@@ -59175,7 +59175,7 @@ async function updateVinsta() {
 // index.ts
 var figlet = require_node_figlet();
 var program2 = new Command;
-program2.version("1.0.1").description("Vinsta for managing your virtual machine").option("-i, --init", "Connect to the Vinsta server").option("-c, --create", "Create a new virtual machine").option("-s, --start", "Start a virtual machine").option("-o, --stop", "Stop a virtual machine").option("-r, --remove", "Remove a virtual machine").option("-k, --check", "Check information of a virtual machine").option("-l, --listall", "List all of the available virtual machine").option("-u, --update", "Update Vinsta to the latest version").parse(process.argv);
+program2.version("1.0.2").description("Vinsta for managing your virtual machine").option("-i, --init", "Connect to the Vinsta server").option("-c, --create", "Create a new virtual machine").option("-s, --start", "Start a virtual machine").option("-o, --stop", "Stop a virtual machine").option("-r, --remove", "Remove a virtual machine").option("-k, --check", "Check information of a virtual machine").option("-l, --listall", "List all of the available virtual machine").option("-u, --update", "Update Vinsta to the latest version").parse(process.argv);
 var options = program2.opts();
 var actions = {
   "1. Connect to your Vinsta server": initVinsta,

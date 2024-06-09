@@ -57,7 +57,7 @@ export async function createVirtualMachine() {
       default: "x64",
     },
   ]);
-  const spinner = ora("Sending request...").start(); // Create spinner instance
+  const spinner = ora("Creating virtual machine... Please wait. This process may take up to 1 minute.").start(); // Create spinner instance
 
   // Read environment variables from $HOME/.vinsta/env
   const serverConfig = getServerConfig();
