@@ -3,10 +3,13 @@ import { spawn } from 'child_process'; // Use spawn for more control
 import ora from 'ora';
 import semver from 'semver';
 
+ 
+
 async function getLocalVersion(): Promise<string> {
   try {
     const { stdout } = await spawn('vinsta', ['-V']);
-    return stdout.toString().trim();
+    const version = stdout.toString().trim().split(' ')[1]; // Extract version from output
+    return version;
   } catch (error) {
     throw new Error('Failed to get local Vinsta version');
   }

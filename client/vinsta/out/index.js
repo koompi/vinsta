@@ -59139,7 +59139,8 @@ import {spawn as spawn2} from "child_process";
 async function getLocalVersion() {
   try {
     const { stdout } = await spawn2("vinsta", ["-V"]);
-    return stdout.toString().trim();
+    const version = stdout.toString().trim().split(" ")[1];
+    return version;
   } catch (error) {
     throw new Error("Failed to get local Vinsta version");
   }
