@@ -59135,11 +59135,18 @@ async function sshVirtualMachine() {
 // cmd/updateVinsta.ts
 var import_ora9 = __toESM(require_ora(), 1);
 var import_semver = __toESM(require_semver2(), 1);
-import {spawn as spawn2} from "child_process";
+import {execSync} from "child_process";
+var hasSudo = function() {
+  try {
+    execSync("sudo true");
+    return true;
+  } catch (error) {
+    return false;
+  }
+};
 async function getLocalVersion() {
   try {
-    const { stdout } = await spawn2("vinsta", ["-V"]);
-    const version = stdout.toString().trim().split(" ")[1];
+    const version = execSync("vinsta -V").toString().trim();
     return version;
   } catch (error) {
     throw new Error("Failed to get local Vinsta version");
@@ -59156,6 +59163,11 @@ async function getRemoteVersion() {
 }
 async function updateVinsta() {
   try {
+    if (!hasSudo()) {
+      console.error("Error: This function requires sudo privileges to proceed.");
+      console.log("Try running: 'sudo !!'");
+      process.exit(1);
+    }
     const spinner = import_ora9.default("Checking for updates...").start();
     const localVersion = await getLocalVersion();
     const remoteVersion = await getRemoteVersion();
@@ -59163,13 +59175,7 @@ async function updateVinsta() {
     spinner.succeed(`Local version: ${localVersion}, Remote version: ${remoteVersion}`);
     if (import_semver.default.lt(localVersion, remoteVersion)) {
       spinner.start("Updating Vinsta...");
-      const { stdout, stderr } = await spawn2("sudo", ["-S", "wget", "https://github.com/koompi/vinsta/raw/main/client/vinsta/out/index.js", "-O", "/usr/bin/vinsta"]);
-      if (stderr) {
-        console.error("Error:", stderr.toString());
-        spinner.fail("Failed to update Vinsta. Please ensure you have sudo privileges.");
-        return;
-      }
-      await spawn2("sudo", ["chmod", "+x", "/usr/bin/vinsta"]);
+      execSync("wget https://github.com/koompi/vinsta/raw/main/client/vinsta/out/index.js -O /usr/bin/vinsta && sudo chmod +x /usr/bin/vinsta");
       spinner.succeed("Vinsta has been updated successfully.");
     } else {
       spinner.succeed("Vinsta is already up to date.");
