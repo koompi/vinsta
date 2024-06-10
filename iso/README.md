@@ -4,7 +4,7 @@ This folder contains downloadable disk images (ISOs) for installing various oper
 #### Example:
 
 - archlinux-x86_64.iso
-- koompi-x86_64.iso
+- koompi-server-x86_64.iso
 - ubuntu-x86_64.iso
 - manjaro-x86_64.iso
 
@@ -12,7 +12,7 @@ This folder contains downloadable disk images (ISOs) for installing various oper
 
 For your convenience, you can download the ISOs directly from our website:
 
-[KOOMPIOS Server](https://dev.koompi.org/iso/)
+[KOOMPIOS Server](https://dev.koompi.org/iso/server/koompi-server-x86-64.iso)
 
 <b>Important</b>: The username and password provided during download are temporary credentials and 
 must be changed during the operating system setup process.
@@ -38,7 +38,7 @@ vim koompi.json
 sudo pibee config koompi.json
 ```
 
-### Step 4: Restart the instance by calling the API or through client command line tool
+### Step 4: Restart the instance by calling the API or simple run `sudo reboot`
 
 ```bash
 ssh newusername@ipaddress # Replace with new user and ip
