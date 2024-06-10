@@ -95,8 +95,8 @@ export const checkInfoVM = async (req: Request, res: Response) => {
 export const cloneVM = async (req: Request, res: Response) => {
   try {
     const VMOptionsV2 = {
-      image: req.body.image || "koompi",
-      name: req.body.name || "default_name",
+      image: req.body.image || "koompi-preinstalled-vm-1",
+      name: req.body.name || "koompi-vm-1",
       ram: req.body.ram,
       disk: req.body.disk,
       cpu: req.body.cpu,
