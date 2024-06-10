@@ -14,7 +14,7 @@ const program = new Command();
 // console.log(figlet.textSync("Vinsta"));
 
 program
-  .version("1.0.5")
+  .version("1.0.6")
   .description("Vinsta for managing your virtual machine")
   .option("-i, --init", "Connect to the Vinsta server")
   .option("-c, --create", "Create a new virtual machine")

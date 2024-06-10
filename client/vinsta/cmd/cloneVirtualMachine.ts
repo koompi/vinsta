@@ -64,7 +64,7 @@ export async function cloneVirtualMachine() {
     });
 
     // Check if the virtual machine was successfully cloned
-    if (response.data.message === "VM cloned successfully") {
+    if (response.data.message === "Successfully cloned the virtual machine") {
       spinner.succeed("Virtual machine cloned successfully"); // Stop spinner on success
       console.log(response.data);
     } else {

@@ -59227,7 +59227,7 @@ async function cloneVirtualMachine() {
         "Content-Type": "application/json"
       }
     });
-    if (response2.data.message === "VM cloned successfully") {
+    if (response2.data.message === "Successfully cloned the virtual machine") {
       spinner.succeed("Virtual machine cloned successfully");
       console.log(response2.data);
     } else {
@@ -59248,7 +59248,7 @@ async function cloneVirtualMachine() {
 // index.ts
 var figlet = require_node_figlet();
 var program2 = new Command;
-program2.version("1.0.5").description("Vinsta for managing your virtual machine").option("-i, --init", "Connect to the Vinsta server").option("-c, --create", "Create a new virtual machine").option("-s, --start", "Start a virtual machine").option("-o, --stop", "Stop a virtual machine").option("-r, --remove", "Remove a virtual machine").option("-k, --check", "Check information of a virtual machine").option("-l, --listall", "List all of the available virtual machine").option("-u, --update", "Update Vinsta to the latest version").parse(process.argv);
+program2.version("1.0.6").description("Vinsta for managing your virtual machine").option("-i, --init", "Connect to the Vinsta server").option("-c, --create", "Create a new virtual machine").option("-s, --start", "Start a virtual machine").option("-o, --stop", "Stop a virtual machine").option("-r, --remove", "Remove a virtual machine").option("-k, --check", "Check information of a virtual machine").option("-l, --listall", "List all of the available virtual machine").option("-u, --update", "Update Vinsta to the latest version").parse(process.argv);
 var options = program2.opts();
 var actions = {
   "1. Connect to your Vinsta server": initVinsta,
