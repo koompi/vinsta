@@ -4,7 +4,8 @@ import { Command } from "commander";
 import inquirer from "inquirer";
 import { createVirtualMachine, stopVirtualMachine, startVirtualMachine,
    removeVirtualMachine, checkInfoVirtualMachine, sshVirtualMachine,
-   listallVirtualMachine, initVinsta, updateVinsta } from "./cmd";
+   listallVirtualMachine, initVinsta, updateVinsta, 
+   cloneVirtualMachine} from "./cmd";
 
 const figlet = require("figlet");
 
@@ -13,7 +14,7 @@ const program = new Command();
 // console.log(figlet.textSync("Vinsta"));
 
 program
-  .version("1.0.2")
+  .version("1.0.3")
   .description("Vinsta for managing your virtual machine")
   .option("-i, --init", "Connect to the Vinsta server")
   .option("-c, --create", "Create a new virtual machine")
@@ -31,12 +32,13 @@ const options = program.opts();
 const actions = {
   "1. Connect to your Vinsta server": initVinsta,
   "2. Create a new virtual machine": createVirtualMachine,
-  "3. Start a virtual machine": startVirtualMachine,
-  "4. Stop a virtual machine": stopVirtualMachine,
-  "5. SSH into virtual machine": sshVirtualMachine,
-  "6. Remove a virtual machine": removeVirtualMachine,
-  "7. Check information of a virtual machine": checkInfoVirtualMachine,
-  "8. List all of the available virtual machines": listallVirtualMachine,
+  "3. Clone a new virtual machine instead of install a fresh one": cloneVirtualMachine,
+  "4. Start a virtual machine": startVirtualMachine,
+  "5. Stop a virtual machine": stopVirtualMachine,
+  "6. SSH into virtual machine": sshVirtualMachine,
+  "7. Remove a virtual machine": removeVirtualMachine,
+  "8. Check information of a virtual machine": checkInfoVirtualMachine,
+  "9. List all of the available virtual machines": listallVirtualMachine,
 };
 
 // Define the type for the actions keys
@@ -67,6 +69,9 @@ if (process.argv.length <= 2) {
   }
   if (options.create) {
     createVirtualMachine();
+  }
+  if (options.clone) {
+    cloneVirtualMachine();
   }
   if (options.start) {
     startVirtualMachine();

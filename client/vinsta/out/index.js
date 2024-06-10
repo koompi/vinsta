@@ -59172,20 +59172,88 @@ async function updateVinsta() {
     console.error("Error:", error.message);
   }
 }
+// cmd/cloneVirtualMachine.ts
+var import_ora10 = __toESM(require_ora(), 1);
+async function cloneVirtualMachine() {
+  const answers = await inquirer_default.prompt([
+    {
+      type: "input",
+      name: "sourceImage",
+      message: "Enter the name of the source virtual machine to clone from:",
+      default: "koompi-preinstalled-vm-1"
+    },
+    {
+      type: "input",
+      name: "name",
+      message: "Enter the name of the new virtual machine:",
+      default: "koompi-vm-1"
+    },
+    {
+      type: "input",
+      name: "cpu",
+      message: "Enter the number of CPUs for the new virtual machine:",
+      default: "2"
+    },
+    {
+      type: "input",
+      name: "ram",
+      message: "Enter the RAM size (in MB) of the new virtual machine:",
+      default: "4096"
+    },
+    {
+      type: "input",
+      name: "disk",
+      message: "Enter the disk size (in GB) of the new virtual machine:",
+      default: "20G"
+    }
+  ]);
+  const spinner = import_ora10.default("Cloning virtual machine... Please wait. This process may take up to a few minutes.").start();
+  const serverConfig = getServerConfig();
+  if (!serverConfig) {
+    spinner.fail("Failed to load server configuration.");
+    return;
+  }
+  const { host, port } = serverConfig;
+  const url2 = `http://${host}:${port}/api/clone`;
+  try {
+    const response2 = await axios_default.post(url2, answers, {
+      headers: {
+        "Content-Type": "application/json"
+      }
+    });
+    if (response2.data.message === "VM cloned successfully") {
+      spinner.succeed("Virtual machine cloned successfully");
+      console.log(response2.data);
+    } else {
+      spinner.fail("Failed to clone virtual machine");
+      console.error("Server response:", response2.data);
+    }
+  } catch (error) {
+    spinner.fail("Error sending request to the server");
+    if (error.response) {
+      console.error("Server responded with an error:", error.response.status, error.response.data);
+    } else if (error.request) {
+      console.error("No response received from the server:", error.request);
+    } else {
+      console.error("Error sending request to the server:", error.message);
+    }
+  }
+}
 // index.ts
 var figlet = require_node_figlet();
 var program2 = new Command;
-program2.version("1.0.2").description("Vinsta for managing your virtual machine").option("-i, --init", "Connect to the Vinsta server").option("-c, --create", "Create a new virtual machine").option("-s, --start", "Start a virtual machine").option("-o, --stop", "Stop a virtual machine").option("-r, --remove", "Remove a virtual machine").option("-k, --check", "Check information of a virtual machine").option("-l, --listall", "List all of the available virtual machine").option("-u, --update", "Update Vinsta to the latest version").parse(process.argv);
+program2.version("1.0.3").description("Vinsta for managing your virtual machine").option("-i, --init", "Connect to the Vinsta server").option("-c, --create", "Create a new virtual machine").option("-s, --start", "Start a virtual machine").option("-o, --stop", "Stop a virtual machine").option("-r, --remove", "Remove a virtual machine").option("-k, --check", "Check information of a virtual machine").option("-l, --listall", "List all of the available virtual machine").option("-u, --update", "Update Vinsta to the latest version").parse(process.argv);
 var options = program2.opts();
 var actions = {
   "1. Connect to your Vinsta server": initVinsta,
   "2. Create a new virtual machine": createVirtualMachine,
-  "3. Start a virtual machine": startVirtualMachine,
-  "4. Stop a virtual machine": stopVirtualMachine,
-  "5. SSH into virtual machine": sshVirtualMachine,
-  "6. Remove a virtual machine": removeVirtualMachine,
-  "7. Check information of a virtual machine": checkInfoVirtualMachine,
-  "8. List all of the available virtual machines": listallVirtualMachine
+  "3. Clone a new virtual machine instead of install a fresh one": cloneVirtualMachine,
+  "4. Start a virtual machine": startVirtualMachine,
+  "5. Stop a virtual machine": stopVirtualMachine,
+  "6. SSH into virtual machine": sshVirtualMachine,
+  "7. Remove a virtual machine": removeVirtualMachine,
+  "8. Check information of a virtual machine": checkInfoVirtualMachine,
+  "9. List all of the available virtual machines": listallVirtualMachine
 };
 if (process.argv.length <= 2) {
   inquirer_default.prompt([
@@ -59211,6 +59279,9 @@ if (process.argv.length <= 2) {
   }
   if (options.create) {
     createVirtualMachine();
+  }
+  if (options.clone) {
+    cloneVirtualMachine();
   }
   if (options.start) {
     startVirtualMachine();
