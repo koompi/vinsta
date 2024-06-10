@@ -4,5 +4,6 @@ export type VMOptionsV2 = {
     ram?: string;
     disk?: string;
     cpu?: string;
+    os?: string;
   }
   

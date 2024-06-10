@@ -1,87 +1,77 @@
-import { exec } from 'child_process'; // Assuming child_process for execution
-
+import { exec } from 'child_process';
 import type { VMOptionsV2 } from '../types/VMOptionsV2';
 import { delay } from '../utils/delay';
+import { getIpAddressFromMac } from '../client/vinsta/shells/getIpAddressFromMac';
 
-export const cloneVirtualMachine = async (options: VMOptionsV2): Promise<void> => {
-  const { image = "koompi", name, cpu, ram, disk } = options; // Destructure options
+const executeCommand = (command: string): Promise<void> => {
+  return new Promise((resolve, reject) => {
+    exec(command, (error, stdout, stderr) => {
+      if (error) {
+        console.error(`Error executing command: ${command}\n${stderr}`);
+        reject(new Error(`Error executing command: ${command}\n${stderr}`));
+        return;
+      }
+      console.log(stdout);
+      resolve();
+    });
+  });
+};
+
+export const cloneVirtualMachine = async (
+  options: VMOptionsV2
+): Promise<{ sshcmd?: string; sshUsername?: string; sshPassword?: string }> => {
+  const { image = "koompi-preinstalled-vm-1", name, cpu, ram, disk, os } = options; // Destructure options
   try {
-    // Use virt-clone to create a new VM from the copied image
-    console.log(`Creating new VM "${name}" using virt-clone...`);
-    await exec(`virt-clone --original ${image} --name ${name} --auto-clone`, (error, stdout, stderr) => {
-      if (error) {
-        console.error(`Error cloning VM with virt-clone: ${error.message}`);
-        return;
-      }
-      console.log(stdout); // Optional: Log virt-clone output for debugging
-    });
+    // Ensure the nvram directory exists
+    const nvramDir = `/var/lib/libvirt/qemu/nvram/${name}`;
+    await executeCommand(`mkdir -p ${nvramDir}`);
 
-    await delay(1000);
+    // Create a new larger QCOW2 image for clean install
+    const newDiskImage = `${name}-${disk}.qcow2`;
+    console.log(`Creating new disk image "${newDiskImage}" with size ${disk}`);
+    await executeCommand(`qemu-img create -f qcow2 -o preallocation=metadata ${newDiskImage} ${disk}`);
 
-    // Set the Maximum CPU before setting it
-    await exec(`virsh setvcpu ${name} ${cpu} --config --maximum`, (error, stdout, stderr) => {
-      if (error) {
-        console.error(`Error setting maximum CPU: ${error.message}`);
-        return;
-      }
-    });
-    await exec(`virsh setvcpu ${name} ${cpu} --config`, (error, stdout, stderr) => {
-      if (error) {
-        console.error(`Error setting CPU: ${error.message}`);
-        return;
-      }
-    });
+    // Use virt-install for clean install with increased storage
+    console.log(`Creating new VM "${name}" with virt-install...`);
+    await executeCommand(`virt-install \
+      --name ${name} \
+      --ram ${ram} \
+      --vcpus ${cpu} \
+      --os-variant ${os || 'archlinux'} \
+      --disk pre-images/${image}.qcow2,bus=virtio, \
+      --import \
+      --network bridge=br0,model=virtio \
+      --boot loader=/usr/share/OVMF/x64/OVMF_CODE.fd,loader.readonly=yes,loader.type=pflash,nvram.template=/usr/share/OVMF/x64/OVMF_VARS.fd \
+      --noautoconsole \
+      --noreboot`);
 
-    // Set the Maximum RAM before setting it
-    await exec(`virsh setmaxmem ${name} ${ram} --config --maximum`, (error, stdout, stderr) => {
-      if (error) {
-        console.error(`Error setting maximum RAM: ${error.message}`);
-        return;
-      }
-    });
-    await exec(`virsh setmem ${name} ${ram} --config`, (error, stdout, stderr) => {
-      if (error) {
-        console.error(`Error setting RAM: ${error.message}`);
-        return;
-      }
-    });
-
-    // Update Storage
-    console.log(`Resizing storage for the VM "${name}"...`);
-    const oldDisk = `${image}.qcow2`;
-    const newDisk = `${name}.qcow2`;
-
-    // Step 1: Create a new disk image with the new size
-    await exec(`qemu-img create -f qcow2 -o preallocation=metadata ${newDisk} ${disk}`, (error, stdout, stderr) => {
-      if (error) {
-        console.error(`Error creating new disk image: ${error.message}`);
-        return;
-      }
-    });
-
-    // Step 2: Perform the resizing from old disk image to the new disk image
-    await exec(`virt-resize --expand /dev/sda2 ${oldDisk} ${newDisk}`, (error, stdout, stderr) => {
-      if (error) {
-        console.error(`Error resizing disk: ${error.message}`);
-        return;
-      }
-      console.log(stdout); // Optional: Log virt-resize output for debugging
-    });
+    await delay(10000);
 
     console.log(`Storage resized successfully for VM "${name}"`);
 
     // Start the new VM
     console.log(`Starting the new VM: "${name}"`);
-    await exec(`virsh start ${name}`, (error, stdout, stderr) => {
-      if (error) {
-        console.error(`Error starting VM: ${error.message}`);
-        return;
-      }
-      console.log(stdout); // Optional: Log VM start output for debugging
-    });
+    await executeCommand(`virsh start ${name}`);
+
+    await delay(50000);
+
+    // Get the IP address of the VM (assuming successful start)
+    const ipAddress = await getIpAddressFromMac(`${name}`);
+
+    const sshCommand = ipAddress && image.startsWith("koompi")
+      ? `ssh koompilive@${ipAddress}`
+      : undefined;
+
+    // **Ensure return even if IP or SSH details are not available:**
+    return {
+      sshcmd: sshCommand,
+      sshUsername: "admin",
+      sshPassword: "123123123",
+    };
 
   } catch (error) {
     console.error(`Error cloning virtual machine "${name}":`, (error as Error).message);
     // Handle potential errors (e.g., file not found, permission issues)
+    throw error; // Re-throw the error to propagate it upwards
   }
 };

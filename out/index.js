@@ -22834,26 +22834,44 @@ var checkInfoVirtualMachine = async (options) => {
 
 // vm/cloneVirtualMachine.ts
 import {exec as exec3} from "child_process";
-var cloneVirtualMachine = async (options) => {
-  const { image = "koompi", name, cpu, ram, disk } = options;
-  try {
-    console.log(`Creating new VM "${name}" using virt-clone...`);
-    await exec3(`virt-clone --original ${image} --name ${name} --auto-clone`, (error, stdout, stderr) => {
+var executeCommand9 = (command) => {
+  return new Promise((resolve, reject) => {
+    exec3(command, (error, stdout, stderr) => {
       if (error) {
-        console.error(`Error cloning VM with virt-clone: ${error.message}`);
+        console.error(`Error executing command: ${command}\n${stderr}`);
+        reject(new Error(`Error executing command: ${command}\n${stderr}`));
         return;
       }
       console.log(stdout);
+      resolve();
     });
-    delay(1000);
-    await exec3(`virsh setvcpu ${name} ${cpu} --config --maximum`);
-    await exec3(`virsh setvcpu ${name} ${cpu} --config`);
-    await exec3(`virsh setmaxmem ${name} ${ram} --config --maximum`);
-    await exec3(`virsh setmem ${name} ${ram} --config`);
-    console.log(`Configuring new VM with options:`);
+  });
+};
+var cloneVirtualMachine = async (options) => {
+  const { image = "koompi-preinstalled-vm-1", name, cpu, ram, disk, os } = options;
+  try {
+    const nvramDir = `/var/lib/libvirt/qemu/nvram/${name}`;
+    await executeCommand9(`mkdir -p ${nvramDir}`);
+    const newDiskImage = `${name}-${disk}.qcow2`;
+    console.log(`Creating new disk image "${newDiskImage}" with size ${disk}`);
+    await executeCommand9(`qemu-img create -f qcow2 -o preallocation=metadata ${newDiskImage} ${disk}`);
+    console.log(`Creating new VM "${name}" with virt-install...`);
+    await executeCommand9(`virt-install       --name ${name}       --ram ${ram}       --vcpus ${cpu}       --os-variant ${os || "archlinux"}       --disk pre-images/${image}.qcow2,bus=virtio,       --import       --network bridge=br0,model=virtio       --boot loader=/usr/share/OVMF/x64/OVMF_CODE.fd,loader.readonly=yes,loader.type=pflash,nvram.template=/usr/share/OVMF/x64/OVMF_VARS.fd       --noautoconsole       --noreboot`);
+    await delay(1e4);
+    console.log(`Storage resized successfully for VM "${name}"`);
     console.log(`Starting the new VM: "${name}"`);
+    await executeCommand9(`virsh start ${name}`);
+    await delay(50000);
+    const ipAddress = await getIpAddressFromMac(`${name}`);
+    const sshCommand = ipAddress && image.startsWith("koompi") ? `ssh koompilive@${ipAddress}` : undefined;
+    return {
+      sshcmd: sshCommand,
+      sshUsername: "admin",
+      sshPassword: "123123123"
+    };
   } catch (error) {
     console.error(`Error cloning virtual machine "${name}":`, error.message);
+    throw error;
   }
 };
 
@@ -22936,14 +22954,14 @@ var checkInfoVM = async (req, res) => {
 var cloneVM = async (req, res) => {
   try {
     const VMOptionsV2 = {
-      image: req.body.image || "koompi",
-      name: req.body.name || "default_name",
+      image: req.body.image || "koompi-preinstalled-vm-1",
+      name: req.body.name || "koompi-vm-1",
       ram: req.body.ram,
       disk: req.body.disk,
       cpu: req.body.cpu
     };
     const cloneVM2 = await cloneVirtualMachine(VMOptionsV2);
-    res.status(201).json({ message: "Clone the virtual machine", vm: cloneVM2 });
+    res.status(201).json({ message: "Successfully cloned the virtual machine", vm: cloneVM2 });
   } catch (error) {
     console.error("Error clone VM:", error);
     res.status(500).json({ message: "Error failed to clone the virtual machine", error });

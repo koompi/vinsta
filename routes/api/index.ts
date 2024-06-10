@@ -103,7 +103,7 @@ export const cloneVM = async (req: Request, res: Response) => {
     };
 
     const cloneVM = await cloneVirtualMachine(VMOptionsV2);
-    res.status(201).json({ message: "Clone the virtual machine", vm: cloneVM });
+    res.status(201).json({ message: "Successfully cloned the virtual machine", vm: cloneVM });
   } catch (error) {
     console.error("Error clone VM:", error);
     res.status(500).json({ message: "Error failed to clone the virtual machine", error });
