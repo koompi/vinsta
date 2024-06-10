@@ -2,6 +2,7 @@ import type { VMOptions } from '../types/VMOptionsType';
 import { getStatusFromOutput } from '../shells/getStatusFromOutput';
 import { executeCommand } from '../shells/executeCommand';
 import { delay } from '../utils/delay';
+import { getIpAddressFromMac } from '../client/vinsta/shells/getIpAddressFromMac';
 
 export const checkInfoVirtualMachine = async (options: VMOptions): Promise<{ message: string; vmInfo?: { status?: string; memoryUsage?: string; cpuCores?: number; ipAddress?: string } }> => {
     const { name = "koompi" } = options;
@@ -24,22 +25,9 @@ export const checkInfoVirtualMachine = async (options: VMOptions): Promise<{ mes
             await delay(10000); // Wait 10 seconds (adjust as needed)
         }
 
-        // Get interface name with type 'bridge'
-        const interfaceNameOutput = await executeCommand(`virsh domiflist ${name} | awk '$2=="bridge" {print $1}'`);
-        const interfaceName = interfaceNameOutput.trim();
-
-        if (!interfaceName) {
-            throw new Error(`Bridge interface not found for VM "${name}"`);
-        }
-
-        // Get MAC address of the VM dynamically
-        // const getMacAddrVM = await executeCommand(`sudo virsh domiflist ${name} | awk -v interface="${interfaceName}" '$1==interface {print $5}'`);
-
-        const getMacAddrVM = await executeCommand(`virsh domiflist ${name} | awk '$1=="${interfaceName}"{print $5}'`)
-
-        // TODO Later on allow change br0 to other things
-        const getIPfromMacVM = `arp-scan --localnet --interface br0| grep ${getMacAddrVM.trim()} | awk 'NR==1 {print $1 }'`;
-        const ipAddress = (await executeCommand(getIPfromMacVM)).trim();
+        // // TODO Later on allow change br0 to other things
+        // Get the IP address of the VM (assuming successful start)
+        const ipAddress = await getIpAddressFromMac(`${name}`);
 
         // Get VM details
         const vmInfoOutput = await executeCommand(`virsh dominfo ${name}`);

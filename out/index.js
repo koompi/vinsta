@@ -22857,6 +22857,7 @@ var cloneVirtualMachine = async (options) => {
     await executeCommand9(`virt-install       --name ${name}       --ram ${ram}       --vcpus ${cpu}       --os-variant ${os || "archlinux"}       --disk images/${name}.qcow2,bus=virtio,       --import       --network bridge=br0,model=virtio       --boot loader=/usr/share/OVMF/x64/OVMF_CODE.fd,loader.readonly=yes,loader.type=pflash,nvram.template=/usr/share/OVMF/x64/OVMF_VARS.fd       --noautoconsole       --noreboot`);
     await delay(1e4);
     await executeCommand9(`qemu-img resize images/${name}.qcow2 +${disk}`);
+    await delay(1e4);
     console.log(`Storage resized successfully for VM "${name}"`);
     console.log(`Starting the new VM: "${name}"`);
     await executeCommand9(`virsh autostart ${name}`);

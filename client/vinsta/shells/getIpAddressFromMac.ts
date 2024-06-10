@@ -17,7 +17,7 @@ export const getIpAddressFromMac = async (vmName: string): Promise<string | unde
         const getMacAddrVM = await executeCommand(`virsh domiflist ${vmName} | awk '$1=="${interfaceName}" {print $5}'`);
 
         // Get IP address from MAC address
-        const getIPfromMacVM = `arp-scan --localnet --interface br0 | grep ${getMacAddrVM.trim()} | awk 'NR==1 {print $1 }'`;
+        const getIPfromMacVM = `arp-scan --localnet --interface br0 | grep ${getMacAddrVM.trim()} | awk 'NR==2 {print $1 }'`;
         const ipAddress = (await executeCommand(getIPfromMacVM)).trim();
 
         return ipAddress;

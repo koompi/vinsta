@@ -46,6 +46,8 @@ export const cloneVirtualMachine = async (
 
     // sudo qemu-img resize  /var/lib/libvirt/images/debian11.qcow2 +20G
     await executeCommand(`qemu-img resize images/${name}.qcow2 +${disk}`);
+    
+    await delay(10000);
 
     console.log(`Storage resized successfully for VM "${name}"`);
 
