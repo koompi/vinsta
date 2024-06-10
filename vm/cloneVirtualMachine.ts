@@ -26,11 +26,6 @@ export const cloneVirtualMachine = async (
     const nvramDir = `/var/lib/libvirt/qemu/nvram/${name}`;
     await executeCommand(`mkdir -p ${nvramDir}`);
 
-    // Create a new larger QCOW2 image for clean install
-    const newDiskImage = `${name}-${disk}.qcow2`;
-    console.log(`Creating new disk image "${newDiskImage}" with size ${disk}`);
-    await executeCommand(`qemu-img create -f qcow2 -o preallocation=metadata ${newDiskImage} ${disk}`);
-
     // Use virt-install for clean install with increased storage
     console.log(`Creating new VM "${name}" with virt-install...`);
     await executeCommand(`virt-install \
@@ -46,6 +41,11 @@ export const cloneVirtualMachine = async (
       --noreboot`);
 
     await delay(10000);
+
+    await executeCommand(`sudo mv pre-images/${image}.qcow2 images/${name}`);
+
+    // sudo qemu-img resize  /var/lib/libvirt/images/debian11.qcow2 +20G
+    await executeCommand(`qemu-img resize images/${name}.qcow2 +${disk}`);
 
     console.log(`Storage resized successfully for VM "${name}"`);
 
