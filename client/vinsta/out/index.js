@@ -59205,6 +59205,12 @@ async function cloneVirtualMachine() {
       name: "disk",
       message: "Enter the disk size (in GB) of the new virtual machine:",
       default: "20G"
+    },
+    {
+      type: "input",
+      name: "OS Variant",
+      message: "Enter the OS Type of the new virtual machine:",
+      default: "archlinux"
     }
   ]);
   const spinner = import_ora10.default("Cloning virtual machine... Please wait. This process may take up to a few minutes.").start();
@@ -59242,7 +59248,7 @@ async function cloneVirtualMachine() {
 // index.ts
 var figlet = require_node_figlet();
 var program2 = new Command;
-program2.version("1.0.3").description("Vinsta for managing your virtual machine").option("-i, --init", "Connect to the Vinsta server").option("-c, --create", "Create a new virtual machine").option("-s, --start", "Start a virtual machine").option("-o, --stop", "Stop a virtual machine").option("-r, --remove", "Remove a virtual machine").option("-k, --check", "Check information of a virtual machine").option("-l, --listall", "List all of the available virtual machine").option("-u, --update", "Update Vinsta to the latest version").parse(process.argv);
+program2.version("1.0.5").description("Vinsta for managing your virtual machine").option("-i, --init", "Connect to the Vinsta server").option("-c, --create", "Create a new virtual machine").option("-s, --start", "Start a virtual machine").option("-o, --stop", "Stop a virtual machine").option("-r, --remove", "Remove a virtual machine").option("-k, --check", "Check information of a virtual machine").option("-l, --listall", "List all of the available virtual machine").option("-u, --update", "Update Vinsta to the latest version").parse(process.argv);
 var options = program2.opts();
 var actions = {
   "1. Connect to your Vinsta server": initVinsta,

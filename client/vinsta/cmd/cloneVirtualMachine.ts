@@ -36,6 +36,12 @@ export async function cloneVirtualMachine() {
       message: "Enter the disk size (in GB) of the new virtual machine:",
       default: "20G",
     },
+    {
+      type: "input",
+      name: "OS Variant",
+      message: "Enter the OS Type of the new virtual machine:",
+      default: "archlinux",
+    },
   ]);
 
   const spinner = ora("Cloning virtual machine... Please wait. This process may take up to a few minutes.").start(); // Create spinner instance

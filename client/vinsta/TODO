@@ -8,3 +8,11 @@ we remove ~/.ssh/known_host and the contain IPaddress of the virtual machine
 
  it will build ssh  command and also save it for later, next time,  just write vm name and it will ssh into it, ofc, need
  to input password.
+
+
+## problem
+Error cloning VM with virt-clone: Command failed: virt-clone --original koompi-preinstalled-vm-1 --name koompi-vm-1 --auto-clone
+ERROR    Invalid name for new guest: Guest name 'koompi-vm-1' is already in use.
+
+## solution
+sudo virsh undefine koompi-vm-1 --nvram --remove-all-storage
