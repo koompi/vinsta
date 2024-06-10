@@ -22663,7 +22663,7 @@ var createVirtualMachine = async (options) => {
     const firmwarePath = arch === "x86" ? "/usr/share/OVMF/ia32" : "/usr/share/OVMF/x64";
     const loaderFile = `${firmwarePath}/OVMF_CODE.fd`;
     const nvramTemplateFile = `${firmwarePath}/OVMF_VARS.fd`;
-    let command = `virt-install --name ${name} --ram ${ram} --vcpus ${cpu} --disk path=${diskFile},format=qcow2 --network network=${network},model=virtio --os-variant=${osVariant} --features acpi=on,apic=on`;
+    let command = `virt-install --name ${name} --ram ${ram} --vcpus ${cpu} --disk path=${diskFile},format=qcow2 --network network=${network},model=virtio --os-variant=${osVariant} --features acpi=on,apic=on --noautoconsole --noreboot `;
     if (bootOption === "uefi") {
       command += ` --boot loader=${loaderFile},loader.readonly=yes,loader.type=pflash,nvram.template=${nvramTemplateFile}`;
     } else {
@@ -22852,18 +22852,18 @@ var cloneVirtualMachine = async (options) => {
   try {
     const nvramDir = `/var/lib/libvirt/qemu/nvram/${name}`;
     await executeCommand9(`mkdir -p ${nvramDir}`);
-    const newDiskImage = `${name}-${disk}.qcow2`;
-    console.log(`Creating new disk image "${newDiskImage}" with size ${disk}`);
-    await executeCommand9(`qemu-img create -f qcow2 -o preallocation=metadata ${newDiskImage} ${disk}`);
+    await executeCommand9(`cp pre-images/${image}.qcow2 images/${name}.qcow2`);
     console.log(`Creating new VM "${name}" with virt-install...`);
-    await executeCommand9(`virt-install       --name ${name}       --ram ${ram}       --vcpus ${cpu}       --os-variant ${os || "archlinux"}       --disk pre-images/${image}.qcow2,bus=virtio,       --import       --network bridge=br0,model=virtio       --boot loader=/usr/share/OVMF/x64/OVMF_CODE.fd,loader.readonly=yes,loader.type=pflash,nvram.template=/usr/share/OVMF/x64/OVMF_VARS.fd       --noautoconsole       --noreboot`);
+    await executeCommand9(`virt-install       --name ${name}       --ram ${ram}       --vcpus ${cpu}       --os-variant ${os || "archlinux"}       --disk images/${name}.qcow2,bus=virtio,       --import       --network bridge=br0,model=virtio       --boot loader=/usr/share/OVMF/x64/OVMF_CODE.fd,loader.readonly=yes,loader.type=pflash,nvram.template=/usr/share/OVMF/x64/OVMF_VARS.fd       --noautoconsole       --noreboot`);
     await delay(1e4);
+    await executeCommand9(`qemu-img resize images/${name}.qcow2 +${disk}`);
     console.log(`Storage resized successfully for VM "${name}"`);
     console.log(`Starting the new VM: "${name}"`);
+    await executeCommand9(`virsh autostart ${name}`);
     await executeCommand9(`virsh start ${name}`);
     await delay(50000);
     const ipAddress = await getIpAddressFromMac(`${name}`);
-    const sshCommand = ipAddress && image.startsWith("koompi") ? `ssh koompilive@${ipAddress}` : undefined;
+    const sshCommand = ipAddress && image.startsWith("koompi") ? `ssh admin@${ipAddress}` : undefined;
     return {
       sshcmd: sshCommand,
       sshUsername: "admin",

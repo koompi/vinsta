@@ -15,7 +15,7 @@ wget https://dev.koompi.org/iso/qcow/koompi-preinstalled-vm-1.tar.gz # Run this 
 tar -xzvf koompi-preinstalled-vm-1.tar.gz
 ```
 
-<bold>Note:</bold>You need this disk image (KOOMPI Server) if you want to deploy a preinstalled virtual machine instead of creating a new one and goes through the installation.
+<b>Note:</b>You need this disk image (KOOMPI Server) if you want to deploy a preinstalled virtual machine instead of creating a new one and goes through the installation.
 
 if you don't want to use KOOMPI Server, you can create your own prebuilt image, by running the API Create and then move the *.qcow2 file to `pre-images` folder.
 

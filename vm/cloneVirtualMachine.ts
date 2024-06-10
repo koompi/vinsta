@@ -26,6 +26,8 @@ export const cloneVirtualMachine = async (
     const nvramDir = `/var/lib/libvirt/qemu/nvram/${name}`;
     await executeCommand(`mkdir -p ${nvramDir}`);
 
+    await executeCommand(`cp pre-images/${image}.qcow2 images/${name}.qcow2`)
+
     // Use virt-install for clean install with increased storage
     console.log(`Creating new VM "${name}" with virt-install...`);
     await executeCommand(`virt-install \
@@ -33,7 +35,7 @@ export const cloneVirtualMachine = async (
       --ram ${ram} \
       --vcpus ${cpu} \
       --os-variant ${os || 'archlinux'} \
-      --disk pre-images/${image}.qcow2,bus=virtio, \
+      --disk images/${name}.qcow2,bus=virtio, \
       --import \
       --network bridge=br0,model=virtio \
       --boot loader=/usr/share/OVMF/x64/OVMF_CODE.fd,loader.readonly=yes,loader.type=pflash,nvram.template=/usr/share/OVMF/x64/OVMF_VARS.fd \
@@ -41,8 +43,6 @@ export const cloneVirtualMachine = async (
       --noreboot`);
 
     await delay(10000);
-
-    await executeCommand(`sudo mv pre-images/${image}.qcow2 images/${name}`);
 
     // sudo qemu-img resize  /var/lib/libvirt/images/debian11.qcow2 +20G
     await executeCommand(`qemu-img resize images/${name}.qcow2 +${disk}`);
