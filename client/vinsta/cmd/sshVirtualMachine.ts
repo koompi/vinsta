@@ -54,7 +54,7 @@ export async function sshVirtualMachine() {
         stdio: "inherit",
       };
 
-      const sshProcess = spawn(sshCommand, [], optis);
+      const sshProcess = spawn(sshCommand, [], options);
       sshProcess.on('close', (code) => {
         if (code === 0) {
           spinner.succeed("Successfully connected to VM");
