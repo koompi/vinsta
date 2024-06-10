@@ -59135,11 +59135,11 @@ async function sshVirtualMachine() {
 // cmd/updateVinsta.ts
 var import_ora9 = __toESM(require_ora(), 1);
 var import_semver = __toESM(require_semver2(), 1);
-import {execSync} from "child_process";
+import {spawn as spawn2} from "child_process";
 async function getLocalVersion() {
   try {
-    const version = execSync("vinsta -V").toString().trim();
-    return version;
+    const { stdout } = await spawn2("vinsta", ["-V"]);
+    return stdout.toString().trim();
   } catch (error) {
     throw new Error("Failed to get local Vinsta version");
   }
@@ -59162,7 +59162,13 @@ async function updateVinsta() {
     spinner.succeed(`Local version: ${localVersion}, Remote version: ${remoteVersion}`);
     if (import_semver.default.lt(localVersion, remoteVersion)) {
       spinner.start("Updating Vinsta...");
-      execSync("sudo wget https://github.com/koompi/vinsta/raw/main/client/vinsta/out/index.js -O /usr/bin/vinsta && sudo chmod +x /usr/bin/vinsta");
+      const { stdout, stderr } = await spawn2("sudo", ["-S", "wget", "https://github.com/koompi/vinsta/raw/main/client/vinsta/out/index.js", "-O", "/usr/bin/vinsta"]);
+      if (stderr) {
+        console.error("Error:", stderr.toString());
+        spinner.fail("Failed to update Vinsta. Please ensure you have sudo privileges.");
+        return;
+      }
+      await spawn2("sudo", ["chmod", "+x", "/usr/bin/vinsta"]);
       spinner.succeed("Vinsta has been updated successfully.");
     } else {
       spinner.succeed("Vinsta is already up to date.");
@@ -59248,7 +59254,7 @@ async function cloneVirtualMachine() {
 // index.ts
 var figlet = require_node_figlet();
 var program2 = new Command;
-program2.version("1.0.6").description("Vinsta for managing your virtual machine").option("-i, --init", "Connect to the Vinsta server").option("-c, --create", "Create a new virtual machine").option("-s, --start", "Start a virtual machine").option("-o, --stop", "Stop a virtual machine").option("-r, --remove", "Remove a virtual machine").option("-k, --check", "Check information of a virtual machine").option("-l, --listall", "List all of the available virtual machine").option("-u, --update", "Update Vinsta to the latest version").parse(process.argv);
+program2.version("1.0.7").description("Vinsta for managing your virtual machine").option("-i, --init", "Connect to the Vinsta server").option("-c, --create", "Create a new virtual machine").option("-s, --start", "Start a virtual machine").option("-o, --stop", "Stop a virtual machine").option("-r, --remove", "Remove a virtual machine").option("-k, --check", "Check information of a virtual machine").option("-l, --listall", "List all of the available virtual machine").option("-u, --update", "Update Vinsta to the latest version").parse(process.argv);
 var options = program2.opts();
 var actions = {
   "1. Connect to your Vinsta server": initVinsta,

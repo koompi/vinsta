@@ -1,12 +1,12 @@
 import axios from 'axios';
-import { execSync } from 'child_process';
+import { spawn } from 'child_process'; // Use spawn for more control
 import ora from 'ora';
 import semver from 'semver';
 
 async function getLocalVersion(): Promise<string> {
   try {
-    const version = execSync('vinsta -V').toString().trim();
-    return version;
+    const { stdout } = await spawn('vinsta', ['-V']);
+    return stdout.toString().trim();
   } catch (error) {
     throw new Error('Failed to get local Vinsta version');
   }
@@ -25,20 +25,28 @@ async function getRemoteVersion(): Promise<string> {
 export async function updateVinsta() {
   try {
     const spinner = ora('Checking for updates...').start();
-    
+
     const localVersion = await getLocalVersion();
     const remoteVersion = await getRemoteVersion();
 
-
     console.log(remoteVersion);
-    
+
     spinner.succeed(`Local version: ${localVersion}, Remote version: ${remoteVersion}`);
 
     if (semver.lt(localVersion, remoteVersion)) {
       spinner.start('Updating Vinsta...');
-      
-      execSync('sudo wget https://github.com/koompi/vinsta/raw/main/client/vinsta/out/index.js -O /usr/bin/vinsta && sudo chmod +x /usr/bin/vinsta');  
-      
+
+      // Prompt user for sudo password using a secure method (e.g., Node's `readline` or a third-party library)
+      const { stdout, stderr } = await spawn('sudo', ['-S', 'wget', 'https://github.com/koompi/vinsta/raw/main/client/vinsta/out/index.js', '-O', '/usr/bin/vinsta']);
+
+      if (stderr) {
+        console.error('Error:', stderr.toString());
+        spinner.fail('Failed to update Vinsta. Please ensure you have sudo privileges.');
+        return; // Exit the function if sudo fails
+      }
+
+      await spawn('sudo', ['chmod', '+x', '/usr/bin/vinsta']);
+
       spinner.succeed('Vinsta has been updated successfully.');
     } else {
       spinner.succeed('Vinsta is already up to date.');
