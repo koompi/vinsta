@@ -36,7 +36,6 @@ async function getRemoteVersion(): Promise<string> {
 
 export async function updateVinsta() {
   try {
-    // Main execution 
     if (!hasSudo()) {
       console.error('Error: This function requires sudo privileges to proceed.');
       console.log("Try running: 'sudo !!'")

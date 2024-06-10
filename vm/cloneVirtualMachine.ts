@@ -51,6 +51,8 @@ export const cloneVirtualMachine = async (
 
     // Start the new VM
     console.log(`Starting the new VM: "${name}"`);
+    // Ensure the VM autostarts
+    await executeCommand(`virsh autostart ${name}`);
     await executeCommand(`virsh start ${name}`);
 
     await delay(50000);
@@ -59,7 +61,7 @@ export const cloneVirtualMachine = async (
     const ipAddress = await getIpAddressFromMac(`${name}`);
 
     const sshCommand = ipAddress && image.startsWith("koompi")
-      ? `ssh koompilive@${ipAddress}`
+      ? `ssh admin@${ipAddress}`
       : undefined;
 
     // **Ensure return even if IP or SSH details are not available:**
