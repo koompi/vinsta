@@ -24,35 +24,22 @@ Vinsta empowers you to automate the provisioning, configuration, and management 
 
 - Operating System: (Linux)
 - Software: (QEMU,KVM)
-- Network: (NAT, BRIDGE(br0))
+- Network: (nat, bridge(br0), host-bridge)
 
 ### Installation
-0. Install bun:
-    ```sh
-    curl -fsSL https://bun.sh/install | bash # for macOS, Linux, and WSL
-    ```
 
-1. Clone the repository:
-    ```sh
-    git clone https://github.com/koompi/vinsta.git
-    ```
-2. Navigate to the project directory:
-    ```sh
-    cd vinsta
-    ```
-3. Install dependencies:
-    ```sh
-    bun install
-    ```
-4. Build vinsta:
-    ```sh
-    bun run build
-    ```
-5. Start vinsta:
-    ```sh
-    bun run start
-    ```
+### Choose your operating system:
+### Installation on KOOMPI OS (Archlinux based)
 
+Please refer to the detailed installation guide for KOOMPI OS:
+
+[Installation Guide for KOOMPI OS](docs/installation-guide/koompi/README.md)
+
+### Installation on Ubuntu
+
+Please refer to the detailed installation guide for Ubuntu:
+
+[Installation Guide for Ubuntu](docs/installation-guide/ubuntu/README.md)
 
 ## Basic API Usage
 
