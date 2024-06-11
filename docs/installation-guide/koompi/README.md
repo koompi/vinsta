@@ -26,7 +26,7 @@ unix_sock_group = "libvirt"
 unix_sock_ro_perms = "0777"
 unix_sock_rw_perms = "0770"
 ```
-<b>NOTE</b>You can change the editor to nano if you are not comfortable using vim.
+<b>NOTE</b>: You can change the editor to nano if you are not comfortable using vim.
 
 ### Step 4: Enable Nested Virtualization (Optional)
 To enable nested virtualization, execute the following commands:
@@ -100,3 +100,38 @@ sudo virsh net-autostart host-bridge
 ```
 
 By following these steps, you will have set up KVM and QEMU with a host-bridged network configuration. This setup allows your virtual machines to share the same subnet as your host machine, enabling other devices on the network to SSH into the virtual machines directly.
+
+## Installing Vinsta
+After completing the KVM and QEMU setup, you can proceed to set up the Vinsta server and prepare it for production use.
+
+### Step 1: Installing Bun
+```bash
+curl -fsSL https://bun.sh/install | bash # for macOS, Linux, and WSL
+```
+
+### Step 2: Clone the Vinsta repository
+```bash
+git clone https://github.com/koompi/vinsta
+```
+
+### Step 3: Install, Build
+Navigate to the Vinsta directory, install dependencies, and build the project:
+```bash
+cd vinsta
+bun install
+bun run build
+```
+
+### Step 4: Start the Vinsta Server
+<b>Recommended:</b> Run the server as `sudo` since many server functions require elevated privileges:
+```bash
+sudo bun start
+```
+
+By completing all of the guide above, you have successfully deployed Vinsta Server and ready to use it:
+
+### Vinsta Command Line Application
+
+Please refer to the detailed cli usage guide for Vinsta:
+
+[Vinsta](../../cli/README.md)
