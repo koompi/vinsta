@@ -37,15 +37,7 @@ A command line tool designed to streamline virtual machine management tasks. Wit
 
 ### Quick start
 ```bash
-    git clone https://github.com/koompi/vinsta.git
-```
-
-```bash
-    cd vinsta/client/vinsta
-```
-
-```bash
-    make install # To install prebuilt
+    curl -fsSL https://github.com/koompi/vinsta/raw/main/client/vinsta/script/install_vinsta | bash
 ```
 
 ### Command line Usage:
