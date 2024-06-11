@@ -3,7 +3,7 @@
 ### Step 1: Install Dependencies
 Firstly, you need to install the necessary dependencies for KVM and QEMU:
 ```bash
-sudo pacman -S virt-manager virt-viewer qemu qemu-arch-extra \
+sudo pacman -Syu curl wget virt-manager virt-viewer qemu qemu-arch-extra \
 edk2-ovmf vde2 ebtables dnsmasq bridge-utils openbsd-netcat libguestfs \
 guestfs-tools qemu-nbd expect netplan
 ```
@@ -138,12 +138,12 @@ Also refer to this link to learn more about `iso` folder: [Click me](https://git
 wget https://dev.koompi.org/iso/qcow/koompi-preinstalled-vm-1.tar.gz -O pre-images/koompi-preinstalled-vm-1.tar.gz
 tar -xzvf pre-images/koompi-preinstalled-vm-1.tar.gz
 ```
-<b>Note:</b>You need this disk image (KOOMPI Server) if you want to deploy a preinstalled virtual machine instead of creating a new one and going through the installation process.
+<b>Note:</b> You need this disk image (KOOMPI Server) if you want to deploy a preinstalled virtual machine instead of creating a new one and going through the installation process.
 
-<b>Note:</b>You can also download just the preinstalled disk image; there is no need to download the ISO if you do so.
+<b>Note:</b> You can also download just the preinstalled disk image; there is no need to download the ISO if you do so.
 Also refer to this link to learn more about `pre-image` folder: [Click me](https://github.com/koompi/vinsta/tree/main/pre-images)
 
-### Step 4: Start the Vinsta Server
+### Step 5: Start the Vinsta Server
 <b>Recommended:</b> Run the server as `sudo` since many server functions require elevated privileges:
 ```bash
 sudo bun start
