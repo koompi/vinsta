@@ -5,6 +5,7 @@ import { startVirtualMachine } from "../../vm/startVirtualMachine";
 import { stopVirtualMachine } from "../../vm/stopVirtualMachine";
 import { checkInfoVirtualMachine } from "../../vm/checkInfoVirtualMachine";
 import { cloneVirtualMachine } from "../../vm/cloneVirtualMachine";
+import { listAllVirtualMachines } from "../../vm/listAllVirtualMachine";
 // import type { VMOptionsV2 } from '../../types/VMOptionsV2';
 
 export const createVM = async (req: Request, res: Response) => {
@@ -110,6 +111,13 @@ export const cloneVM = async (req: Request, res: Response) => {
   }
 };
 
-export const listAllVM = (req: Request, res: Response) => {
-  // logic to delete user by ID from the database
+export const listAllVM = async (req: Request, res: Response) => {
+  try {
+    const table = await listAllVirtualMachines();
+    res.json({ message: "Successfully listall the virtual machine", table });
+  } catch (error) {
+    res.status(500).json({ message: "Failed to list all virtual machines" });
+  }
 };
+
+
