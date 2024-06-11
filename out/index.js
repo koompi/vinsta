@@ -22621,7 +22621,7 @@ var getIpAddressFromMac = async (vmName) => {
       throw new Error(`Bridge interface not found for VM "${vmName}"`);
     }
     const getMacAddrVM = await executeCommand2(`virsh domiflist ${vmName} | awk '\$1=="${interfaceName}" {print \$5}'`);
-    const getIPfromMacVM = `arp-scan --localnet --interface br0 | grep ${getMacAddrVM.trim()} | awk 'NR==1 {print \$1 }'`;
+    const getIPfromMacVM = `arp-scan --localnet --interface br0 | grep ${getMacAddrVM.trim()} | awk 'NR==2 {print \$1 }'`;
     const ipAddress = (await executeCommand2(getIPfromMacVM)).trim();
     return ipAddress;
   } catch (error) {
@@ -22797,14 +22797,7 @@ var checkInfoVirtualMachine = async (options) => {
       console.log("Waiting for VM to start...");
       await delay(1e4);
     }
-    const interfaceNameOutput = await executeCommand(`virsh domiflist ${name} | awk '\$2=="bridge" {print \$1}'`);
-    const interfaceName = interfaceNameOutput.trim();
-    if (!interfaceName) {
-      throw new Error(`Bridge interface not found for VM "${name}"`);
-    }
-    const getMacAddrVM = await executeCommand(`virsh domiflist ${name} | awk '\$1=="${interfaceName}"{print \$5}'`);
-    const getIPfromMacVM = `arp-scan --localnet --interface br0| grep ${getMacAddrVM.trim()} | awk 'NR==1 {print \$1 }'`;
-    const ipAddress = (await executeCommand(getIPfromMacVM)).trim();
+    const ipAddress = await getIpAddressFromMac(`${name}`);
     const vmInfoOutput = await executeCommand(`virsh dominfo ${name}`);
     const lines = vmInfoOutput.split("\n");
     let cpuCount;
@@ -22833,10 +22826,92 @@ var checkInfoVirtualMachine = async (options) => {
 };
 
 // vm/cloneVirtualMachine.ts
+import {exec as exec4} from "child_process";
+
+// shells/expendDisk.ts
 import {exec as exec3} from "child_process";
-var executeCommand9 = (command) => {
+import {promisify} from "util";
+var execPromise = promisify(exec3);
+var executeCommand9 = async (command) => {
+  try {
+    const { stdout, stderr } = await execPromise(command);
+    if (stderr) {
+      console.error(`Error executing command: ${command}\n${stderr}`);
+      throw new Error(`Error executing command: ${command}\n${stderr}`);
+    }
+    console.log(stdout);
+  } catch (error) {
+    console.error(`Error executing command: ${command}\n${error}`);
+    throw error;
+  }
+};
+var resizePartition = async () => {
+  const expectScript = `
+    spawn sudo parted /dev/nbd0 resizepart 2 100%
+    expect {
+      "Fix/Ignore?" {
+        send "Fix\\r"
+        exp_continue
+      }
+      "Partition number?" {
+        send "2\\r"
+        exp_continue
+      }
+      "End? " {
+        send "\\r"
+        exp_continue
+      }
+      eof
+    }
+  `;
+  await executeCommand9(`expect <<EOF\n${expectScript}\nEOF`);
+};
+var es2fsck_check = async () => {
+  const expectScript = `
+      spawn sudo e2fsck -f /dev/nbd0p2
+      expect {
+        "Pass 5: Checking group summary information" {
+          exit
+        }
+        eof
+      }
+    `;
+  await executeCommand9(`expect <<EOF\n${expectScript}\nEOF`);
+};
+var resize2fs = async () => {
+  const expectScript = `
+    spawn sudo resize2fs /dev/nbd0p2
+    expect {
+      "nothing to do" { 
+        exit
+      }
+      eof
+    }
+    `;
+  await executeCommand9(`expect <<EOF\n${expectScript}\nEOF`);
+};
+var expandVMDisk = async (imageName) => {
+  try {
+    await executeCommand9("sudo modprobe nbd max_part=63");
+    await executeCommand9(`sudo qemu-nbd --connect=/dev/nbd0 "images/${imageName}"`);
+    await resizePartition();
+    delay(5000);
+    await es2fsck_check();
+    delay(5000);
+    await resize2fs();
+    delay(5000);
+    await executeCommand9("sudo qemu-nbd --disconnect /dev/nbd0");
+    console.log("VM disk expansion completed!");
+  } catch (error) {
+    console.error(`Error during VM disk expansion: ${error.message}`);
+    throw error;
+  }
+};
+
+// vm/cloneVirtualMachine.ts
+var executeCommand10 = (command) => {
   return new Promise((resolve, reject) => {
-    exec3(command, (error, stdout, stderr) => {
+    exec4(command, (error, stdout, stderr) => {
       if (error) {
         console.error(`Error executing command: ${command}\n${stderr}`);
         reject(new Error(`Error executing command: ${command}\n${stderr}`));
@@ -22851,17 +22926,16 @@ var cloneVirtualMachine = async (options) => {
   const { image = "koompi-preinstalled-vm-1", name, cpu, ram, disk, os } = options;
   try {
     const nvramDir = `/var/lib/libvirt/qemu/nvram/${name}`;
-    await executeCommand9(`mkdir -p ${nvramDir}`);
-    await executeCommand9(`cp pre-images/${image}.qcow2 images/${name}.qcow2`);
+    await executeCommand10(`mkdir -p ${nvramDir}`);
+    await executeCommand10(`cp pre-images/${image}.qcow2 images/${name}.qcow2`);
     console.log(`Creating new VM "${name}" with virt-install...`);
-    await executeCommand9(`virt-install       --name ${name}       --ram ${ram}       --vcpus ${cpu}       --os-variant ${os || "archlinux"}       --disk images/${name}.qcow2,bus=virtio,       --import       --network bridge=br0,model=virtio       --boot loader=/usr/share/OVMF/x64/OVMF_CODE.fd,loader.readonly=yes,loader.type=pflash,nvram.template=/usr/share/OVMF/x64/OVMF_VARS.fd       --noautoconsole       --noreboot`);
-    await delay(1e4);
-    await executeCommand9(`qemu-img resize images/${name}.qcow2 +${disk}`);
-    await delay(1e4);
+    await executeCommand10(`virt-install       --name ${name}       --ram ${ram}       --vcpus ${cpu}       --os-variant ${os || "archlinux"}       --disk images/${name}.qcow2,bus=virtio,       --import       --network bridge=br0,model=virtio       --boot loader=/usr/share/OVMF/x64/OVMF_CODE.fd,loader.readonly=yes,loader.type=pflash,nvram.template=/usr/share/OVMF/x64/OVMF_VARS.fd       --noautoconsole       --noreboot`);
+    await executeCommand10(`qemu-img resize images/${name}.qcow2 +${disk}`);
+    await expandVMDisk(`${name}.qcow2`);
     console.log(`Storage resized successfully for VM "${name}"`);
     console.log(`Starting the new VM: "${name}"`);
-    await executeCommand9(`virsh autostart ${name}`);
-    await executeCommand9(`virsh start ${name}`);
+    await executeCommand10(`virsh autostart ${name}`);
+    await executeCommand10(`virsh start ${name}`);
     await delay(50000);
     const ipAddress = await getIpAddressFromMac(`${name}`);
     const sshCommand = ipAddress && image.startsWith("koompi") ? `ssh admin@${ipAddress}` : undefined;

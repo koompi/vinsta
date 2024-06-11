@@ -2,6 +2,7 @@ import { exec } from 'child_process';
 import type { VMOptionsV2 } from '../types/VMOptionsV2';
 import { delay } from '../utils/delay';
 import { getIpAddressFromMac } from '../client/vinsta/shells/getIpAddressFromMac';
+import { expandVMDisk } from '../shells/expendDisk';
 
 const executeCommand = (command: string): Promise<void> => {
   return new Promise((resolve, reject) => {
@@ -42,12 +43,12 @@ export const cloneVirtualMachine = async (
       --noautoconsole \
       --noreboot`);
 
-    await delay(10000);
 
     // sudo qemu-img resize  /var/lib/libvirt/images/debian11.qcow2 +20G
     await executeCommand(`qemu-img resize images/${name}.qcow2 +${disk}`);
     
-    await delay(10000);
+
+    await expandVMDisk(`${name}.qcow2`)
 
     console.log(`Storage resized successfully for VM "${name}"`);
 

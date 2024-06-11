@@ -24,6 +24,9 @@ sudo modprobe nbd max_part=63
 sudo qemu-nbd --connect=/dev/nbd0 images/${name}.qcow2
 
 sudo parted /dev/nbd0 resizepart 2 100%
+Fix
+2
+e2fsck -f /dev/nbd0p2
 sudo resize2fs /dev/nbd0p2
 
 
@@ -59,4 +62,10 @@ Fix
 sudo parted /dev/vda resizepart 2 100%
 yes
 ## fix ip print the second ip instead
+sudo resize2fs /dev/vda2
+
+
+### Now just let user run this two command
+
+sudo parted /dev/vda resizepart 2 100%
 sudo resize2fs /dev/vda2
