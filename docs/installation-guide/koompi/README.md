@@ -122,6 +122,27 @@ bun install
 bun run build
 ```
 
+### Step 4: Download additional resources
+To ensure Vinsta works correctly, you need to have at least one ISO file available, as well as a preinstalled disk image.
+
+#### Download KOOMPI-Server ISO
+```bash
+wget https://dev.koompi.org/iso/server/koompi-server-x86-64.iso -O iso/koompi-server-x86-64.iso
+
+```
+<b>Note:</b> You don't need to download the preinstalled disk image below if you plan to create your own preinstalled disk image.
+Also refer to this link to learn more about `iso` folder: [Click me](https://github.com/koompi/vinsta/tree/main/iso)
+
+#### Download KOOMPI-Server Preinstalled Disk Image
+```bash
+wget https://dev.koompi.org/iso/qcow/koompi-preinstalled-vm-1.tar.gz -O pre-images/koompi-preinstalled-vm-1.tar.gz
+tar -xzvf pre-images/koompi-preinstalled-vm-1.tar.gz
+```
+<b>Note:</b>You need this disk image (KOOMPI Server) if you want to deploy a preinstalled virtual machine instead of creating a new one and going through the installation process.
+
+<b>Note:</b>You can also download just the preinstalled disk image; there is no need to download the ISO if you do so.
+Also refer to this link to learn more about `pre-image` folder: [Click me](https://github.com/koompi/vinsta/tree/main/pre-images)
+
 ### Step 4: Start the Vinsta Server
 <b>Recommended:</b> Run the server as `sudo` since many server functions require elevated privileges:
 ```bash
