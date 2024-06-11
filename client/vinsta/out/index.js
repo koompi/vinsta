@@ -59026,6 +59026,7 @@ async function listallVirtualMachine() {
   const spinner = import_ora8.default("Requesting all of the virtual machine available ...").start();
   const serverConfig = getServerConfig();
   if (!serverConfig) {
+    spinner.fail("Failed to load server configuration");
     return;
   }
   const { host, port } = serverConfig;
@@ -59037,10 +59038,10 @@ async function listallVirtualMachine() {
       }
     });
     if (response2.data.message === "Successfully listall the virtual machine") {
-      spinner.succeed("Successfully listall the virtual machine");
-      console.log(response2.data);
+      spinner.succeed("Successfully listed all virtual machines");
+      console.log(response2.data.table);
     } else {
-      spinner.fail("Failed to start virtual machine");
+      spinner.fail("Failed to list virtual machines");
       console.error("Server response:", response2.data);
     }
   } catch (error) {
