@@ -10,3 +10,4 @@ export * from "./initVinsta";
 export * from "./sshVirtualMachine";
 export * from "./updateVinsta";
 export * from "./cloneVirtualMachine";
+export * from "./backupVirtualMachine";

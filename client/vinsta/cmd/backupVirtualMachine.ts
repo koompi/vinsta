@@ -1,10 +1,20 @@
+import inquirer from "inquirer";
+import ora from "ora";
 import { getServerConfig } from "../utils/config";
-import ora from 'ora';
 import axios from "axios";
 
-export async function listallVirtualMachine() {
-  const spinner = ora("Requesting all of the virtual machine available ...").start(); // Start spinner instance
-  
+
+export async function backupVirtualMachine() {
+  const answers = await inquirer.prompt([
+    {
+      type: "input",
+      name: "name",
+      message: "Enter the name of the virtual machine:",
+      default: "koompi-vm-1",
+    },
+  ]);
+  const spinner = ora("Sending request...").start(); // Start spinner instance
+
   // Read environment variables from $HOME/.vinsta/env
   const serverConfig = getServerConfig();
   if (!serverConfig) {
@@ -12,23 +22,24 @@ export async function listallVirtualMachine() {
   }
 
   const { host, port } = serverConfig;
-  const url = `http://${host}:${port}/api/listall`;
-
+  const url = `http://${host}:${port}/api/checkinfo`;
 
   try {
-    const response = await axios.get(url, {
+    const response = await axios.post(url, answers, {
       headers: {
         "Content-Type": "application/json"
       }
     });
-    // Check if the virtual machine was successfully started
-    if (response.data.message === "Successfully listall the virtual machine") {
-      spinner.succeed("Successfully listall the virtual machine"); // Stop spinner on success
+
+    // Check if the virtual machine was successfully removed
+    if (response.data.message === "Checking info of the virtual machine") {
+      spinner.succeed("Virtual machine successfully checked"); // Stop spinner on success
       console.log(response.data);
     } else {
-      spinner.fail("Failed to start virtual machine"); // Stop spinner on error
+      spinner.fail("Failed to check virtual machine"); // Stop spinner on error
       console.error("Server response:", response.data);
     }
+    return response;
   } catch (error: any) {
     spinner.fail("Error sending request to the server"); // Stop spinner on error
     if (error.response) {

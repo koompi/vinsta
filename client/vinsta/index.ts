@@ -4,7 +4,7 @@ import { Command } from "commander";
 import inquirer from "inquirer";
 import { createVirtualMachine, stopVirtualMachine, startVirtualMachine,
    removeVirtualMachine, checkInfoVirtualMachine, sshVirtualMachine,
-   listallVirtualMachine, initVinsta, updateVinsta, 
+   listallVirtualMachine, initVinsta, updateVinsta, backupVirtualMachine,
    cloneVirtualMachine} from "./cmd";
 
 const figlet = require("figlet");
@@ -16,13 +16,15 @@ const program = new Command();
 program
   .version("1.0.8")
   .description("Vinsta for managing your virtual machine")
-  .option("-i, --init", "Connect to the Vinsta server")
-  .option("-c, --create", "Create a new virtual machine")
-  .option("-s, --start", "Start a virtual machine")
-  .option("-o, --stop", "Stop a virtual machine")
-  .option("-r, --remove", "Remove a virtual machine")
-  .option("-k, --check", "Check information of a virtual machine")
-  .option("-l, --listall", "List all of the available virtual machine")
+  .option("-i, --init", "connect to the Vinsta server")
+  .option("-c, --create", "create a new virtual machine")
+  .option("  , --clone", "clone a new virtual machine instead of install a fresh one")
+  .option("-s, --start", "start a virtual machine")
+  .option("-o, --stop", "stop a virtual machine")
+  .option("-b, --backup", "backup a virtual machine")
+  .option("-r, --remove", "remove a virtual machine")
+  .option("-k, --check", "check information of a virtual machine")
+  .option("-l, --listall", "list all of the available virtual machine")
   .option("-u, --update", "Update Vinsta to the latest version")
   .parse(process.argv);
 
@@ -93,5 +95,8 @@ if (process.argv.length <= 2) {
   }
   if (options.config) {
     listallVirtualMachine();
+  }
+  if (options.backup) {
+    backupVirtualMachine();
   }
 }

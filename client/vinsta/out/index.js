@@ -59038,6 +59038,7 @@ async function listallVirtualMachine() {
     });
     if (response2.data.message === "Successfully listall the virtual machine") {
       spinner.succeed("Successfully listall the virtual machine");
+      console.log(response2.data);
     } else {
       spinner.fail("Failed to start virtual machine");
       console.error("Server response:", response2.data);
