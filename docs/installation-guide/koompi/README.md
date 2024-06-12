@@ -60,7 +60,7 @@ network:
       mtu: 1500
       parameters:
         stp: true
-        forward-delay: 15wwp0s21f0u3i4
+        forward-delay: 15
 ```
 
 <b>Notes</b>: Replace `enp2s0f0` with your actual network interface name. To find your network interface, run:
