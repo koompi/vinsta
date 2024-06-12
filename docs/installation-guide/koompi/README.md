@@ -127,7 +127,7 @@ To ensure Vinsta works correctly, you need to have at least one ISO file availab
 
 #### Download KOOMPI-Server ISO
 ```bash
-wget https://dev.koompi.org/iso/server/koompi-server-x86-64.iso -O iso/koompi-server-x86-64.iso
+wget https://dev.koompi.org/iso/server/koompi-server-x86_64.iso -O iso/koompi-server-x86-64.iso
 
 ```
 <b>Note:</b> You don't need to download the preinstalled disk image below if you plan to create your own preinstalled disk image.
