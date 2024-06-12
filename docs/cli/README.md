@@ -19,7 +19,7 @@ Once you have set up the Vinsta server, you can use the Vinsta CLI tool to acces
 
 
 <details close="close">
-<summary><b>vinsta --create</summary>
+<summary><b>vinsta --create | Create a new Virtual Machine</summary>
 
 ### Step 1: run `vinsta --create`
 
@@ -66,5 +66,28 @@ ssh admin@10.2.0.111
 
 Now you have a virtual machine ready for production use.
 
-
 </details>
+
+<details close="close">
+<summary><b>vinsta --clone  *| Alternative to --create but faster</summary>
+</details>
+
+
+<details close="close">
+<summary><b>vinsta --start *| Start a virtual machine</summary>
+</details>
+
+
+<details close="close">
+<summary><b>vinsta --stop **| Stop a virtual machine</summary>
+</details>
+
+
+<details close="close">
+<summary><b>vinsta --remove | Remove a virtual machine</summary>
+</details>
+
+<details close="close">
+<summary><b>vinsta --listall| List all of the available virtual machine</summary>
+</details>
+
