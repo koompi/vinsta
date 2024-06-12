@@ -5,7 +5,7 @@ Firstly, you need to install the necessary dependencies for KVM and QEMU:
 ```bash
 sudo pacman -Syu curl wget virt-manager virt-viewer qemu qemu-arch-extra \
 edk2-ovmf vde2 ebtables dnsmasq bridge-utils openbsd-netcat libguestfs \
-guestfs-tools qemu-nbd expect netplan
+guestfs-tools expect netplan
 ```
 
 ### Step 2: Enable the Libvirt Daemon
