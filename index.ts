@@ -23,7 +23,7 @@ app.use((req, res, next) => {
 app.use("/api", vmRoutes);
 app.use(express.static(__dirname + '/public'));
 const PORT = Number(process.env.PORT || 3000); 
-const HOST = process.env.HOST || 'localhost';
+const HOST = process.env.HOST || '0.0.0.0';
 
 app.listen(PORT, HOST, () => {
   console.log(`Server is running on http://${HOST}:${PORT}`);
