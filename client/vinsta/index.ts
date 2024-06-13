@@ -5,7 +5,7 @@ import inquirer from "inquirer";
 import { createVirtualMachine, stopVirtualMachine, startVirtualMachine,
    removeVirtualMachine, checkInfoVirtualMachine, sshVirtualMachine,
    listallVirtualMachine, initVinsta, updateVinsta, backupVirtualMachine,
-   cloneVirtualMachine} from "./cmd";
+   cloneVirtualMachine, restoreVirtualMachine} from "./cmd";
 
 const figlet = require("figlet");
 
@@ -22,6 +22,7 @@ program
   .option("-s, --start", "start a virtual machine")
   .option("-o, --stop", "stop a virtual machine")
   .option("-b, --backup", "backup a virtual machine")
+  .option("  , --restore", "restore a a backup virtual machine")
   .option("-r, --remove", "remove a virtual machine")
   .option("-k, --check", "check information of a virtual machine")
   .option("-l, --listall", "list all of the available virtual machine")
@@ -32,15 +33,16 @@ const options = program.opts();
 
 // Define the actions
 const actions = {
-  "1. Connect to your Vinsta server": initVinsta,
-  "2. Create a new virtual machine": createVirtualMachine,
-  "3. Clone a new virtual machine instead of install a fresh one": cloneVirtualMachine,
-  "4. Start a virtual machine": startVirtualMachine,
-  "5. Stop a virtual machine": stopVirtualMachine,
-  "6. SSH into virtual machine": sshVirtualMachine,
-  "7. Remove a virtual machine": removeVirtualMachine,
-  "8. Check information of a virtual machine": checkInfoVirtualMachine,
-  "9. List all of the available virtual machines": listallVirtualMachine,
+  "1. Create a new virtual machine": createVirtualMachine,
+  "2. Clone a new virtual machine instead of install a fresh one": cloneVirtualMachine,
+  "3. Start a virtual machine": startVirtualMachine,
+  "4. Stop a virtual machine": stopVirtualMachine,
+  "5. Remove a virtual machine": removeVirtualMachine,
+  "6. List all of the available virtual machines": listallVirtualMachine,
+  "7. Check information of a virtual machine": checkInfoVirtualMachine,
+  "8. SSH into virtual machine": sshVirtualMachine,
+  "8. Backup a virtual machine": backupVirtualMachine,
+  "9. Restore a virtual machine from backup": restoreVirtualMachine,
 };
 
 // Define the type for the actions keys
@@ -98,5 +100,8 @@ if (process.argv.length <= 2) {
   }
   if (options.backup) {
     backupVirtualMachine();
+  }
+  if (options.restore) {
+    restoreVirtualMachine();
   }
 }

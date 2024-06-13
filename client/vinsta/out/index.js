@@ -59003,7 +59003,7 @@ async function checkInfoVirtualMachine() {
     });
     if (response2.data.message === "Checking info of the virtual machine") {
       spinner.succeed("Virtual machine successfully checked");
-      console.log(response2.data);
+      console.log(response2.data.table);
     } else {
       spinner.fail("Failed to check virtual machine");
       console.error("Server response:", response2.data);
@@ -59296,7 +59296,7 @@ async function backupVirtualMachine() {
     {
       type: "input",
       name: "name",
-      message: "Enter the name of the virtual machine:",
+      message: "Enter the name of the virtual machine, you want to backup:",
       default: "koompi-vm-1"
     }
   ]);
@@ -59306,21 +59306,60 @@ async function backupVirtualMachine() {
     return;
   }
   const { host, port } = serverConfig;
-  const url2 = `http://${host}:${port}/api/checkinfo`;
+  const url2 = `http://${host}:${port}/api/backup`;
   try {
     const response2 = await axios_default.post(url2, answers, {
       headers: {
         "Content-Type": "application/json"
       }
     });
-    if (response2.data.message === "Checking info of the virtual machine") {
-      spinner.succeed("Virtual machine successfully checked");
-      console.log(response2.data);
+    if (response2.data.message === "Backing up the virtual machine") {
+      spinner.succeed("Virtual machine successfully backup");
     } else {
-      spinner.fail("Failed to check virtual machine");
+      spinner.fail("Failed to backup virtual machine");
       console.error("Server response:", response2.data);
     }
-    return response2;
+  } catch (error) {
+    spinner.fail("Error sending request to the server");
+    if (error.response) {
+      console.error("Server responded with an error:", error.response.status, error.response.data);
+    } else if (error.request) {
+      console.error("No response received from the server:", error.request);
+    } else {
+      console.error("Error sending request to the server:", error.message);
+    }
+  }
+}
+// cmd/restoreVirtualMachine.ts
+var import_ora13 = __toESM(require_ora(), 1);
+async function restoreVirtualMachine() {
+  const answers = await inquirer_default.prompt([
+    {
+      type: "input",
+      name: "name",
+      message: "Enter the name of the virtual machine, you want to backup:",
+      default: "koompi-vm-1"
+    }
+  ]);
+  const spinner = import_ora13.default("Sending request...").start();
+  const serverConfig = getServerConfig();
+  if (!serverConfig) {
+    return;
+  }
+  const { host, port } = serverConfig;
+  const url2 = `http://${host}:${port}/api/restore`;
+  try {
+    const response2 = await axios_default.post(url2, answers, {
+      headers: {
+        "Content-Type": "application/json"
+      }
+    });
+    if (response2.data.message === "Restoring the virtual machine") {
+      spinner.succeed("Virtual machine successfully restored");
+    } else {
+      spinner.fail("Failed to backup virtual machine");
+      console.error("Server response:", response2.data);
+    }
   } catch (error) {
     spinner.fail("Error sending request to the server");
     if (error.response) {
@@ -59335,18 +59374,19 @@ async function backupVirtualMachine() {
 // index.ts
 var figlet = require_node_figlet();
 var program2 = new Command;
-program2.version("1.0.8").description("Vinsta for managing your virtual machine").option("-i, --init", "connect to the Vinsta server").option("-c, --create", "create a new virtual machine").option("  , --clone", "clone a new virtual machine instead of install a fresh one").option("-s, --start", "start a virtual machine").option("-o, --stop", "stop a virtual machine").option("-b, --backup", "backup a virtual machine").option("-r, --remove", "remove a virtual machine").option("-k, --check", "check information of a virtual machine").option("-l, --listall", "list all of the available virtual machine").option("-u, --update", "Update Vinsta to the latest version").parse(process.argv);
+program2.version("1.0.8").description("Vinsta for managing your virtual machine").option("-i, --init", "connect to the Vinsta server").option("-c, --create", "create a new virtual machine").option("  , --clone", "clone a new virtual machine instead of install a fresh one").option("-s, --start", "start a virtual machine").option("-o, --stop", "stop a virtual machine").option("-b, --backup", "backup a virtual machine").option("  , --restore", "restore a a backup virtual machine").option("-r, --remove", "remove a virtual machine").option("-k, --check", "check information of a virtual machine").option("-l, --listall", "list all of the available virtual machine").option("-u, --update", "Update Vinsta to the latest version").parse(process.argv);
 var options = program2.opts();
 var actions = {
-  "1. Connect to your Vinsta server": initVinsta,
-  "2. Create a new virtual machine": createVirtualMachine,
-  "3. Clone a new virtual machine instead of install a fresh one": cloneVirtualMachine,
-  "4. Start a virtual machine": startVirtualMachine,
-  "5. Stop a virtual machine": stopVirtualMachine,
-  "6. SSH into virtual machine": sshVirtualMachine,
-  "7. Remove a virtual machine": removeVirtualMachine,
-  "8. Check information of a virtual machine": checkInfoVirtualMachine,
-  "9. List all of the available virtual machines": listallVirtualMachine
+  "1. Create a new virtual machine": createVirtualMachine,
+  "2. Clone a new virtual machine instead of install a fresh one": cloneVirtualMachine,
+  "3. Start a virtual machine": startVirtualMachine,
+  "4. Stop a virtual machine": stopVirtualMachine,
+  "5. Remove a virtual machine": removeVirtualMachine,
+  "6. List all of the available virtual machines": listallVirtualMachine,
+  "7. Check information of a virtual machine": checkInfoVirtualMachine,
+  "8. SSH into virtual machine": sshVirtualMachine,
+  "8. Backup a virtual machine": backupVirtualMachine,
+  "9. Restore a virtual machine from backup": restoreVirtualMachine
 };
 if (process.argv.length <= 2) {
   inquirer_default.prompt([
@@ -59399,5 +59439,8 @@ if (process.argv.length <= 2) {
   }
   if (options.backup) {
     backupVirtualMachine();
+  }
+  if (options.restore) {
+    restoreVirtualMachine();
   }
 }

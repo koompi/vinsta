@@ -34,7 +34,7 @@ export async function checkInfoVirtualMachine() {
     // Check if the virtual machine was successfully removed
     if (response.data.message === "Checking info of the virtual machine") {
       spinner.succeed("Virtual machine successfully checked"); // Stop spinner on success
-      console.log(response.data);
+      console.log(response.data.table); // Display the formatted table
     } else {
       spinner.fail("Failed to check virtual machine"); // Stop spinner on error
       console.error("Server response:", response.data);

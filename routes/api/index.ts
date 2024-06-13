@@ -6,6 +6,8 @@ import { stopVirtualMachine } from "../../vm/stopVirtualMachine";
 import { checkInfoVirtualMachine } from "../../vm/checkInfoVirtualMachine";
 import { cloneVirtualMachine } from "../../vm/cloneVirtualMachine";
 import { listAllVirtualMachines } from "../../vm/listAllVirtualMachine";
+import { backupVirtualMachine } from "../../vm/backupVirtualMachine";
+import { restoreVirtualMachine } from "../../vm/restoreVirtualMachine";
 // import type { VMOptionsV2 } from '../../types/VMOptionsV2';
 
 export const createVM = async (req: Request, res: Response) => {
@@ -85,8 +87,8 @@ export const checkInfoVM = async (req: Request, res: Response) => {
       name: req.body.name || "default_name",
     };
 
-    const checkVM = await checkInfoVirtualMachine(vmOptions);
-    res.status(201).json({ message: "Checking info of the virtual machine", vm: checkVM });
+    const table = await checkInfoVirtualMachine(vmOptions);
+    res.status(201).json({ message: "Checking info of the virtual machine", table });
   } catch (error) {
     console.error("Virtual machine not found:", error);
     res.status(500).json({ message: "Virtual machine not found", error });
@@ -121,3 +123,30 @@ export const listAllVM = async (req: Request, res: Response) => {
 };
 
 
+export const backupVM = async (req: Request, res: Response) => {
+  try {
+    const vmOptions = {
+      name: req.body.name || "koompi-vm-1",
+    };
+
+    const backupVM = await backupVirtualMachine(vmOptions);
+    res.status(201).json({ message: "Backing up the virtual machine", vm: backupVM });
+  } catch (error) {
+    console.error("Virtual machine not found:", error);
+    res.status(500).json({ message: "Virtual machine not found", error });
+  }
+};
+
+export const restoreVM = async (req: Request, res: Response) => {
+  try {
+    const vmOptions = {
+      name: req.body.name || "koompi-vm-1",
+    };
+
+    const restoreVM = await restoreVirtualMachine(vmOptions);
+    res.status(201).json({ message: "Restoring the virtual machine", vm: restoreVM });
+  } catch (error) {
+    console.error("Virtual machine not found:", error);
+    res.status(500).json({ message: "Virtual machine not found", error });
+  }
+};

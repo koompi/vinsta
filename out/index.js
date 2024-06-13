@@ -24090,7 +24090,7 @@ var require_main = __commonJS((exports, module) => {
     if (options && options.path && options.path.length > 0) {
       if (Array.isArray(options.path)) {
         for (const filepath of options.path) {
-          if (fs.existsSync(filepath)) {
+          if (fs3.existsSync(filepath)) {
             possibleVaultPath = filepath.endsWith(".vault") ? filepath : `${filepath}.vault`;
           }
         }
@@ -24098,15 +24098,15 @@ var require_main = __commonJS((exports, module) => {
         possibleVaultPath = options.path.endsWith(".vault") ? options.path : `${options.path}.vault`;
       }
     } else {
-      possibleVaultPath = path.resolve(process.cwd(), ".env.vault");
+      possibleVaultPath = path3.resolve(process.cwd(), ".env.vault");
     }
-    if (fs.existsSync(possibleVaultPath)) {
+    if (fs3.existsSync(possibleVaultPath)) {
       return possibleVaultPath;
     }
     return null;
   };
   var _resolveHome = function(envPath) {
-    return envPath[0] === "~" ? path.join(os.homedir(), envPath.slice(1)) : envPath;
+    return envPath[0] === "~" ? path3.join(os.homedir(), envPath.slice(1)) : envPath;
   };
   var _configVault = function(options) {
     _log("Loading env from encrypted .env.vault");
@@ -24119,7 +24119,7 @@ var require_main = __commonJS((exports, module) => {
     return { parsed };
   };
   var configDotenv = function(options) {
-    const dotenvPath = path.resolve(process.cwd(), ".env");
+    const dotenvPath = path3.resolve(process.cwd(), ".env");
     let encoding = "utf8";
     const debug = Boolean(options && options.debug);
     if (options && options.encoding) {
@@ -24142,13 +24142,13 @@ var require_main = __commonJS((exports, module) => {
     }
     let lastError;
     const parsedAll = {};
-    for (const path2 of optionPaths) {
+    for (const path4 of optionPaths) {
       try {
-        const parsed = DotenvModule.parse(fs.readFileSync(path2, { encoding }));
+        const parsed = DotenvModule.parse(fs3.readFileSync(path4, { encoding }));
         DotenvModule.populate(parsedAll, parsed, options);
       } catch (e) {
         if (debug) {
-          _debug(`Failed to load ${path2} ${e.message}`);
+          _debug(`Failed to load ${path4} ${e.message}`);
         }
         lastError = e;
       }
@@ -24227,8 +24227,8 @@ var require_main = __commonJS((exports, module) => {
       }
     }
   };
-  var fs = __require("fs");
-  var path = __require("path");
+  var fs3 = __require("fs");
+  var path3 = __require("path");
   var os = __require("os");
   var crypto = __require("crypto");
   var packageJson = require_package();
@@ -24346,7 +24346,7 @@ var createVirtualMachine = async (options) => {
     const firmwarePath = arch === "x86" ? "/usr/share/OVMF/ia32" : "/usr/share/OVMF/x64";
     const loaderFile = `${firmwarePath}/OVMF_CODE.fd`;
     const nvramTemplateFile = `${firmwarePath}/OVMF_VARS.fd`;
-    let command = `virt-install --name ${name} --ram ${ram} --vcpus ${cpu} --disk path=${diskFile},format=qcow2 --network network=${network},model=virtio --os-variant=${osVariant} --features acpi=on,apic=on --noautoconsole --noreboot `;
+    let command = `virt-install --name ${name} --ram ${ram} --vcpus ${cpu} --disk path=${diskFile},format=qcow2 --network network=${network},model=virtio --os-variant=${osVariant} --features acpi=on,apic=on --noautoconsole`;
     if (bootOption === "uefi") {
       command += ` --boot loader=${loaderFile},loader.readonly=yes,loader.type=pflash,nvram.template=${nvramTemplateFile}`;
     } else {
@@ -24466,6 +24466,7 @@ function getStatusFromOutput(output) {
 }
 
 // vm/checkInfoVirtualMachine.ts
+var import_cli_table3 = __toESM(require_table(), 1);
 var checkInfoVirtualMachine = async (options) => {
   const { name = "koompi" } = options;
   try {
@@ -24480,7 +24481,7 @@ var checkInfoVirtualMachine = async (options) => {
       console.log("Waiting for VM to start...");
       await delay(1e4);
     }
-    const ipAddress = await getIpAddressFromMac(`${name}`);
+    const ipAddress = await getIpAddressFromMac(name);
     const vmInfoOutput = await executeCommand(`virsh dominfo ${name}`);
     const lines = vmInfoOutput.split("\n");
     let cpuCount;
@@ -24492,16 +24493,14 @@ var checkInfoVirtualMachine = async (options) => {
         usedMemory = parseInt(line.split(":")[1].trim()) / 1048576;
       }
     }
-    const vmDetails = {
-      status: getStatusFromOutput(vmInfoOutput),
-      memoryUsage: usedMemory?.toFixed(2) + "MB" || "N/A",
-      cpuCores: cpuCount,
-      ipAddress
-    };
-    return {
-      message: "Information of the instance",
-      vmInfo: vmDetails
-    };
+    const vmStatus = getStatusFromOutput(vmInfoOutput);
+    const memoryUsage = usedMemory?.toFixed(2) + "MB" || "N/A";
+    const table = new import_cli_table3.default({
+      head: ["VM Information", "Details"],
+      colWidths: [30, 50]
+    });
+    table.push(["VM Name", name], ["Status", vmStatus], ["Memory Usage", memoryUsage], ["CPU Cores", cpuCount?.toString() || "N/A"], ["IP Address", ipAddress || "N/A"]);
+    return table.toString();
   } catch (error) {
     console.error("An error occurred:", error.message);
     throw error;
@@ -24634,7 +24633,7 @@ var cloneVirtualMachine = async (options) => {
 };
 
 // vm/listAllVirtualMachine.ts
-var import_cli_table3 = __toESM(require_table(), 1);
+var import_cli_table32 = __toESM(require_table(), 1);
 var listAllVirtualMachines = async () => {
   try {
     const vmListOutput = await executeCommand(`virsh list --all`);
@@ -24643,7 +24642,7 @@ var listAllVirtualMachines = async () => {
     const nameWidth = 30;
     const stateWidth = 15;
     const ipWidth = 20;
-    const table = new import_cli_table3.default({
+    const table = new import_cli_table32.default({
       head: ["ID", "Name", "Status", "IP Address"],
       colWidths: [idWidth, nameWidth, stateWidth, ipWidth]
     });
@@ -24665,6 +24664,66 @@ var listAllVirtualMachines = async () => {
   } catch (error) {
     console.error("An error occurred:", error.message);
     throw new Error("Failed to list all virtual machines");
+  }
+};
+
+// vm/backupVirtualMachine.ts
+import {promises as fs} from "fs";
+import path from "path";
+var backupVirtualMachine = async (options) => {
+  const { name = "koompi-vm-1" } = options;
+  const currentPath = `images/${name}.qcow2`;
+  const backupDir = path.resolve("backup");
+  const backupPath = path.join(backupDir, `${name}.qcow2`);
+  try {
+    await stopVirtualMachine({ name });
+    await fs.access(currentPath);
+    await fs.mkdir(backupDir, { recursive: true });
+    await executeCommand(`cp ${currentPath} ${backupPath}`);
+    await startVirtualMachine({ name });
+    return {
+      message: "Successfully backed up the virtual machine"
+    };
+  } catch (error) {
+    console.error(`Error backing up the virtual machine "${name}":`, error.message);
+    if (error.code === "ENOENT") {
+      throw new Error(`Source file "${currentPath}" not found`);
+    } else if (error.code === "EACCES") {
+      throw new Error(`Permission denied when accessing "${currentPath}" or "${backupDir}"`);
+    } else {
+      throw error;
+    }
+  }
+};
+
+// vm/restoreVirtualMachine.ts
+import {promises as fs2} from "fs";
+import path2 from "path";
+var restoreVirtualMachine = async (options) => {
+  const { name = "koompi-vm-1" } = options;
+  const currentPath = `images/${name}.qcow2`;
+  const backupDir = path2.resolve("backup");
+  const backupPath = path2.join(backupDir, `${name}.qcow2`);
+  const tempPath = `images/temp_${name}.qcow2`;
+  try {
+    await stopVirtualMachine({ name });
+    await fs2.access(backupPath);
+    await executeCommand(`mv ${currentPath} ${tempPath}`);
+    await executeCommand(`cp ${backupPath} ${currentPath}`);
+    await executeCommand(`mv ${tempPath} ${backupPath}`);
+    await startVirtualMachine({ name });
+    return {
+      message: "Successfully restored the virtual machine from backup"
+    };
+  } catch (error) {
+    console.error(`Error restoring the virtual machine "${name}":`, error.message);
+    if (error.code === "ENOENT") {
+      throw new Error(`Backup file "${backupPath}" not found`);
+    } else if (error.code === "EACCES") {
+      throw new Error(`Permission denied when accessing "${backupPath}" or "${currentPath}"`);
+    } else {
+      throw error;
+    }
   }
 };
 
@@ -24737,8 +24796,8 @@ var checkInfoVM = async (req, res) => {
     const vmOptions = {
       name: req.body.name || "default_name"
     };
-    const checkVM = await checkInfoVirtualMachine(vmOptions);
-    res.status(201).json({ message: "Checking info of the virtual machine", vm: checkVM });
+    const table = await checkInfoVirtualMachine(vmOptions);
+    res.status(201).json({ message: "Checking info of the virtual machine", table });
   } catch (error) {
     console.error("Virtual machine not found:", error);
     res.status(500).json({ message: "Virtual machine not found", error });
@@ -24768,16 +24827,42 @@ var listAllVM = async (req, res) => {
     res.status(500).json({ message: "Failed to list all virtual machines" });
   }
 };
+var backupVM = async (req, res) => {
+  try {
+    const vmOptions = {
+      name: req.body.name || "koompi-vm-1"
+    };
+    const backupVM2 = await backupVirtualMachine(vmOptions);
+    res.status(201).json({ message: "Backing up the virtual machine", vm: backupVM2 });
+  } catch (error) {
+    console.error("Virtual machine not found:", error);
+    res.status(500).json({ message: "Virtual machine not found", error });
+  }
+};
+var restoreVM = async (req, res) => {
+  try {
+    const vmOptions = {
+      name: req.body.name || "koompi-vm-1"
+    };
+    const restoreVM2 = await restoreVirtualMachine(vmOptions);
+    res.status(201).json({ message: "Restoring the virtual machine", vm: restoreVM2 });
+  } catch (error) {
+    console.error("Virtual machine not found:", error);
+    res.status(500).json({ message: "Virtual machine not found", error });
+  }
+};
 
 // routes/vmRoutes.ts
 var router = import_express.default.Router();
+router.get("/listall", listAllVM);
 router.post("/create", createVM);
 router.post("/remove", removeVM);
 router.post("/start", startVM);
 router.post("/stop", stopVM);
 router.post("/clone", cloneVM);
 router.post("/checkinfo", checkInfoVM);
-router.get("/listall", listAllVM);
+router.post("/backup", backupVM);
+router.post("/restore", restoreVM);
 var vmRoutes_default = router;
 
 // index.ts
@@ -24797,7 +24882,7 @@ app.use((req, res, next) => {
 app.use("/api", vmRoutes_default);
 app.use(import_express2.default.static(__dirname + "/public"));
 var PORT = Number(process.env.PORT || 3000);
-var HOST = process.env.HOST || "localhost";
+var HOST = process.env.HOST || "0.0.0.0";
 app.listen(PORT, HOST, () => {
   console.log(`Server is running on http://${HOST}:${PORT}`);
 });

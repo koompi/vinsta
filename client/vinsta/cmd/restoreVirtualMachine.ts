@@ -4,7 +4,7 @@ import { getServerConfig } from "../utils/config";
 import axios from "axios";
 
 
-export async function backupVirtualMachine() {
+export async function restoreVirtualMachine() {
   const answers = await inquirer.prompt([
     {
       type: "input",
@@ -22,7 +22,7 @@ export async function backupVirtualMachine() {
   }
 
   const { host, port } = serverConfig;
-  const url = `http://${host}:${port}/api/backup`;
+  const url = `http://${host}:${port}/api/restore`;
 
   try {
     const response = await axios.post(url, answers, {
@@ -32,8 +32,8 @@ export async function backupVirtualMachine() {
     });
 
     // Check if the virtual machine was successfully removed
-    if (response.data.message === "Backing up the virtual machine") {
-      spinner.succeed("Virtual machine successfully backup"); // Stop spinner on success
+    if (response.data.message === "Restoring the virtual machine") {
+      spinner.succeed("Virtual machine successfully restored"); // Stop spinner on success
       // console.log(response.data);
     } else {
       spinner.fail("Failed to backup virtual machine"); // Stop spinner on error

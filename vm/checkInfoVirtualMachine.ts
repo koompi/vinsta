@@ -3,8 +3,9 @@ import { getStatusFromOutput } from '../shells/getStatusFromOutput';
 import { executeCommand } from '../shells/executeCommand';
 import { delay } from '../utils/delay';
 import { getIpAddressFromMac } from '../client/vinsta/shells/getIpAddressFromMac';
+import Table from 'cli-table3';
 
-export const checkInfoVirtualMachine = async (options: VMOptions): Promise<{ message: string; vmInfo?: { status?: string; memoryUsage?: string; cpuCores?: number; ipAddress?: string } }> => {
+export const checkInfoVirtualMachine = async (options: VMOptions): Promise<string> => {
     const { name = "koompi" } = options;
 
     try {
@@ -25,9 +26,8 @@ export const checkInfoVirtualMachine = async (options: VMOptions): Promise<{ mes
             await delay(10000); // Wait 10 seconds (adjust as needed)
         }
 
-        // // TODO Later on allow change br0 to other things
         // Get the IP address of the VM (assuming successful start)
-        const ipAddress = await getIpAddressFromMac(`${name}`);
+        const ipAddress = await getIpAddressFromMac(name);
 
         // Get VM details
         const vmInfoOutput = await executeCommand(`virsh dominfo ${name}`);
@@ -45,18 +45,26 @@ export const checkInfoVirtualMachine = async (options: VMOptions): Promise<{ mes
             }
         }
 
-        const vmDetails = {
-            status: getStatusFromOutput(vmInfoOutput),
-            memoryUsage: usedMemory?.toFixed(2) + "MB" || 'N/A',
-            cpuCores: cpuCount,
-            ipAddress,
-        };
+        const vmStatus = getStatusFromOutput(vmInfoOutput);
+        const memoryUsage = usedMemory?.toFixed(2) + "MB" || 'N/A';
 
-        // Return an object with a message and VM details
-        return {
-            message: "Information of the instance",
-            vmInfo: vmDetails,
-        };
+        // Create a new table instance
+        const table = new Table({
+            head: ['VM Information', 'Details'],
+            colWidths: [30, 50], // Adjust column widths as needed
+        });
+
+        // Add rows to the table
+        table.push(
+            ['VM Name', name],
+            ['Status', vmStatus],
+            ['Memory Usage', memoryUsage],
+            ['CPU Cores', cpuCount?.toString() || 'N/A'],
+            ['IP Address', ipAddress || 'N/A']
+        );
+
+        // Return the table as a string
+        return table.toString();
     } catch (error) {
         console.error("An error occurred:", (error as Error).message);
         throw error;

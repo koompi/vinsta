@@ -11,3 +11,4 @@ export * from "./sshVirtualMachine";
 export * from "./updateVinsta";
 export * from "./cloneVirtualMachine";
 export * from "./backupVirtualMachine";
+export * from "./restoreVirtualMachine";
