@@ -28,7 +28,14 @@ unix_sock_rw_perms = "0770"
 ```
 <b>NOTE</b>: You can change the editor to nano if you are not comfortable using vim.
 
-### Step 4: Enable Nested Virtualization (Optional)
+### Step 4: Add current user to kvm and libvirt groups
+```
+sudo usermod -a -G kvm $(whoami)
+sudo usermod -a -G libvirt $(whoami)
+sudo newgrp libvirt
+```
+
+### Step 5: Enable Nested Virtualization (Optional)
 To enable nested virtualization, execute the following commands:
 ```bash
 sudo modprobe -r kvm_intel
@@ -36,13 +43,12 @@ sudo modprobe kvm_intel nested=1
 echo "options kvm-intel nested=1" | sudo tee /etc/modprobe.d/kvm-intel.conf
 ```
 
-### Step 5: Verify Nested Virtualization
+### Step 6: Verify Nested Virtualization
 Run these commands to verify that nested virtualization is enabled:
 ```bash
 systool -m kvm_intel -v | grep nested
 cat /sys/module/kvm_intel/parameters/nested
 ```
-
 
 ## Setting Up a Host Bridge
 
