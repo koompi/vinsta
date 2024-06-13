@@ -42,7 +42,7 @@ export async function createVirtualMachine() {
       type: "input",
       name: "network",
       message: "Enter the network of the virtual machine:",
-      default: "br10",
+      default: "host-bridge",
     },
     {
       type: "input",
