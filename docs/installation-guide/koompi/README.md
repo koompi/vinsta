@@ -99,6 +99,14 @@ sudo virsh net-start host-bridge
 sudo virsh net-autostart host-bridge
 ```
 
+
+Also define and start the default network using the following commands:
+```bash
+sudo virsh net-define default
+sudo virsh net-start default
+sudo virsh net-autostart default
+```
+
 By following these steps, you will have set up KVM and QEMU with a host-bridged network configuration. This setup allows your virtual machines to share the same subnet as your host machine, enabling other devices on the network to SSH into the virtual machines directly.
 
 ## Installing Vinsta

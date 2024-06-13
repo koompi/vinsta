@@ -24,7 +24,7 @@ Vinsta empowers you to automate the provisioning, configuration, and management 
 
 - Operating System: (Linux)
 - Software: (QEMU,KVM)
-- Network: (nat, bridge(br0), host-bridge)
+- Network: (nat, bridge(br10), host-bridge)
 
 ### Installation
 
