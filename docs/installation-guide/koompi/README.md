@@ -5,7 +5,7 @@ Firstly, you need to install the necessary dependencies for KVM and QEMU:
 ```bash
 sudo pacman -Syu curl wget virt-manager virt-viewer qemu qemu-arch-extra \
 edk2-ovmf vde2 ebtables dnsmasq bridge-utils openbsd-netcat libguestfs \
-guestfs-tools qemu-nbd expect netplan
+guestfs-tools expect netplan
 ```
 
 ### Step 2: Enable the Libvirt Daemon
@@ -60,7 +60,7 @@ network:
       mtu: 1500
       parameters:
         stp: true
-        forward-delay: 15wwp0s21f0u3i4
+        forward-delay: 15
 ```
 
 <b>Notes</b>: Replace `enp2s0f0` with your actual network interface name. To find your network interface, run:
@@ -127,7 +127,7 @@ To ensure Vinsta works correctly, you need to have at least one ISO file availab
 
 #### Download KOOMPI-Server ISO
 ```bash
-wget https://dev.koompi.org/iso/server/koompi-server-x86-64.iso -O iso/koompi-server-x86-64.iso
+wget https://dev.koompi.org/iso/server/koompi-server-x86_64.iso -O iso/koompi-server-x86-64.iso
 
 ```
 <b>Note:</b> You don't need to download the preinstalled disk image below if you plan to create your own preinstalled disk image.
