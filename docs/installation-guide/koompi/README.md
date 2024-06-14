@@ -53,7 +53,7 @@ cat /sys/module/kvm_intel/parameters/nested
 ## Setting Up a Host Bridge
 
 ## Step 1: Configure Netplan Bridge
-Create the Netplan configuration file `/etc/netplan/01-kvmbridge.yml` with the following contents:
+Create the Netplan configuration file `/etc/netplan/01-kvmbridge.yaml` with the following contents:
 ```yaml
 network:
   ethernets:
