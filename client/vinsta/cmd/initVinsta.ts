@@ -1,19 +1,32 @@
 import inquirer from "inquirer";
 import mongoose from "mongoose";
 import bcrypt from "bcrypt";
+import { userSchema } from "./models/userSchema";
+import { serverSchema } from "./models/serverSchema";
+import express from 'express';
+import session from 'express-session';
+
+// Model for User Account
+const User = mongoose.model('User', userSchema);
+const Server = mongoose.model('Server', serverSchema);
 
 // MongoDB Connection Setup
-mongoose.connect('mongodb://localhost:27017/vinsta', {
-});
+mongoose.connect('mongodb://localhost:27017/vinsta', {});
 const db = mongoose.connection;
 
-// Define Schema for Master Key
-const masterKeySchema = new mongoose.Schema({
-  key: String, // Encrypted or hashed master key
-});
+const app = express();
 
-// Model for Master Key
-const MasterKey = mongoose.model('MasterKey', masterKeySchema);
+// Setup express-session middleware
+app.use(session({
+  secret: '123456789', // Replace with your own secret key for session encryption
+  resave: false,
+  saveUninitialized: false,
+  cookie: {
+    secure: false, // Set to true if using HTTPS
+    maxAge: 24 * 60 * 60 * 1000, // 24 hours (session expiration time)
+  },
+}));
+
 
 export async function initVinsta() {
   const { initOption } = await inquirer.prompt([
@@ -39,6 +52,18 @@ async function initializeServer() {
       name: "name",
       message: "Enter the Vinsta server name you want to create:",
       default: "Vinsta-Server-1",
+    },
+    {
+      type: "input",
+      name: "ip",
+      message: "Enter the host ip address:",
+      default: "192.168.18.9",
+    },
+    {
+      type: "input",
+      name: "port",
+      message: "Enter the port:",
+      default: "3333",
     },
     {
       type: "input",
@@ -75,15 +100,21 @@ async function initializeServer() {
   // Hash the master key
   const hashedKey = await bcrypt.hash(answers.masterkey, 10);
 
-  // Store hashed master key in MongoDB
-  const newMasterKey = new MasterKey({ key: hashedKey });
-  await newMasterKey.save();
+  // Store hashed master key and server configuration in MongoDB
+  const newServer = new Server({
+    name: answers.name,
+    ip: answers.ip,
+    port: answers.port,
+    masterKey: hashedKey,
+  });
+
+  await newServer.save();
 
   console.log('Successfully initialized the Vinsta Server');
-  mongoose.disconnect(); // Disconnect from MongoDB
+  mongoose.disconnect();
 }
 
-async function initializeClient() {
+export async function initializeClient(req: express.Request) {
   const answers = await inquirer.prompt([
     {
       type: "input",
@@ -130,39 +161,62 @@ async function initializeClient() {
       pass: answers.databasepassword,
     });
 
-    // Retrieve hashed master key from MongoDB
-    const storedMasterKey = await MasterKey.findOne();
+    // Retrieve server details from MongoDB
+    const serverDetails = await Server.findOne({});
 
-    if (!storedMasterKey) {
-      console.error('Master key not found in MongoDB.');
+    if (!serverDetails) {
+      console.error('Server details not found in MongoDB.');
       mongoose.disconnect();
       return;
     }
 
     // Compare provided master key with stored hashed key
-    if (!answers.masterkey) {
-      console.error('No master key provided.');
-      mongoose.disconnect();
-      return;
-    }
-
-    const isMatch = await bcrypt.compare(answers.masterkey, storedMasterKey.key || '');
-
+    const isMatch = await bcrypt.compare(answers.masterkey, serverDetails.masterKey);
     if (!isMatch) {
       console.error('Invalid master key.');
       mongoose.disconnect();
       return;
     }
 
-    // Proceed with account creation
-    console.log('Master key verified. Creating account...');
+    // Proceed with account creation or login
+    console.log('Master key verified. Creating account or logging in...');
 
-    // Implement account creation logic here (e.g., save nickname and number to MongoDB)
+    // Check if the user already exists
+    let user = await User.findOne({ name: answers.name });
 
-    console.log(`Account created successfully for ${answers.name} with number ${answers.number}`);
+    if (!user) {
+      // Create a new user account if it doesn't exist
+      user = new User({
+        name: answers.name,
+        number: answers.number,
+        // Add more fields as needed
+      });
+
+      await user.save();
+      console.log(`New account created for ${answers.name}`);
+    } else {
+      console.log(`Logging in as ${answers.name}`);
+    }
+
+    // Store user information in session (make sure to pass req object to the function)
+    storeUserInSession(req, user);
+
+    console.log(`Login state stored for ${answers.name}`);
     mongoose.disconnect(); // Disconnect from MongoDB
   } catch (error) {
     console.error('Error during initialization:', error);
     mongoose.disconnect();
   }
 }
+
+// Function to store user in session
+function storeUserInSession(req: any, user: any) {
+  if (req && req.session) {
+    req.session.user = user;
+  } else {
+    console.error('Cannot store user in session: req or req.session is undefined.');
+  }
+}
+
+// // Export app for testing purposes or further integration
+// export default app;
