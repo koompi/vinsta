@@ -1,8 +1,8 @@
-import type { VMOptions } from '../types/VMOptionsType';
-import { getStatusFromOutput } from '../shells/getStatusFromOutput';
-import { executeCommand } from '../shells/executeCommand';
-import { delay } from '../utils/delay';
-import { getIpAddressFromMac } from '../client/vinsta/shells/getIpAddressFromMac';
+import type { VMOptions } from '../../types/VMOptionsType';
+import { getStatusFromOutput } from '../../shells/getStatusFromOutput';
+import { executeCommand } from '../../shells/executeCommand';
+import { delay } from '../../utils/delay';
+import { getIpAddressFromMac } from '../../client/vinsta/shells/getIpAddressFromMac';
 import Table from 'cli-table3';
 
 export const checkInfoVirtualMachine = async (options: VMOptions): Promise<string> => {

@@ -1,8 +1,8 @@
 import { exec } from 'child_process';
-import type { VMOptionsV2 } from '../types/VMOptionsV2';
-import { delay } from '../utils/delay';
-import { getIpAddressFromMac } from '../client/vinsta/shells/getIpAddressFromMac';
-import { expandVMDisk } from '../shells/expendDisk';
+import type { VMOptionsV2 } from '../../types/VMOptionsV2';
+import { delay } from '../../utils/delay';
+import { getIpAddressFromMac } from '../../client/vinsta/shells/getIpAddressFromMac';
+import { expandVMDisk } from '../../shells/expendDisk';
 
 const executeCommand = (command: string): Promise<void> => {
   return new Promise((resolve, reject) => {

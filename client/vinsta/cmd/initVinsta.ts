@@ -1,57 +1,58 @@
 import inquirer from "inquirer";
-import * as fs from "fs";
-import * as path from "path";
-import os from "os";
+import fs from "fs";
+import { execSync } from 'child_process';
+
 
 export async function initVinsta() {
   const answers = await inquirer.prompt([
     {
       type: "input",
-      name: "host",
-      message: "Enter the host of the Vinsta server:",
-      default: "192.168.0.1",
+      name: "name",
+      message: "Enter the Vinsta server name you want to create:",
+      default: "Vinsta-Server-1",
     },
     {
       type: "input",
-      name: "port",
-      message: "Enter the port of the Vinsta server:",
-      default: "3333",
+      name: "databaseip",
+      message: "Enter the IP Address of the MongoDB:",
+      default: "localhost",
+    },
+    {
+      type: "input",
+      name: "databaseport",
+      message: "Enter the Port of the MongoDB:",
+      default: "27015",
+    },
+    {
+      type: "input",
+      name: "databasepassword",
+      message: "Enter the Password of the MongoDB:",
+      default: "zxcvahsdkjfqwer",
+    },
+    {
+      type: "input",
+      name: "masterkey",
+      message: "Create a master key that is used for accessing the Vinsta Server:",
+      default: "zxcvbnmasdfgqewruioasdfq123@@",
     },
   ]);
 
-  const homeDir = os.homedir();
-  const vinstaDir = path.join(homeDir, ".vinsta");
-  const sshDir = path.join(homeDir, ".ssh");
+  const envFileContent = `
+NAME=${answers.name}
+DATABASE_IP=${answers.databaseip}
+DATABASE_PORT=${answers.databaseport}
+DATABASE_PASSWORD=${answers.databasepassword}
+MASTER_KEY=${answers.masterkey}
+`;
 
-  // Create the .vinsta directory if it doesn't exist
-  if (!fs.existsSync(vinstaDir)) {
-    fs.mkdirSync(vinstaDir, { recursive: true });
+  // Define the directory and filename for the .env file
+  const envFilePath = '/opt/vinsta/.env';
+
+  // Write the content to the specified .env file
+  try {
+    fs.writeFileSync(envFilePath, envFileContent.trim());
+    console.log('Successfully initialized the server, all that left is running `vinsta --server`');
+  } catch (error: any) {
+    console.error('Error writing to .env file:', error.message);
   }
-  
-// Define the SSH directory path and configuration content
-const sshContent = `Host *\n    StrictHostKeyChecking no\n    UserKnownHostsFile=/dev/null`;
-
-// Define the path to the SSH configuration file
-const sshConfigPath = path.join(sshDir, "config");
-
-// Write the SSH configuration content to the SSH configuration file
-fs.writeFileSync(sshConfigPath, sshContent);
-
-console.log("SSH configuration updated successfully.");
-
-
-  const envFilePath = path.join(vinstaDir, "env");
-
-  // Write the answers to .env
-  const envContent = `HOST=${answers.host}\nPORT=${answers.port}\n`;
-  fs.writeFileSync(envFilePath, envContent);
-
-  console.log("Initialization state saved to " + envFilePath);
-}
-
-// Check if the script is run directly
-if (process.argv[1] === __filename) {
-  initVinsta().catch((error) => {
-    console.error("Error during initialization:", error);
-  });
 }

@@ -67,9 +67,7 @@ if (process.argv.length <= 2) {
   });
 } else {
   if (options.init) {
-    initVinsta().catch((error) => {
-      console.error("Error during initialization:", error);
-    });
+    initVinsta();
   }
   if (options.create) {
     createVirtualMachine();

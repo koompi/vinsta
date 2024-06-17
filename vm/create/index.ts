@@ -1,8 +1,6 @@
-import { getIPFromCommandOutput } from "../shells/getIPFromCommandOutput";
-import { delay } from "../utils/delay";
-import type { VMOptions } from "../types/VMOptionsType";
-import { executeCommand } from "../shells/executeCommand";
-import { getIpAddressFromMac } from "../client/vinsta/shells/getIpAddressFromMac";
+import type { VMOptions } from "../../types/VMOptionsType";
+import { executeCommand } from "../../shells/executeCommand";
+import { getIpAddressFromMac } from "../../client/vinsta/shells/getIpAddressFromMac";
 
 // Define the type of the object being returned
 interface VMCreationResponse {

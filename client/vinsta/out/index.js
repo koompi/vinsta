@@ -53296,17 +53296,17 @@ var require_figlet = __commonJS((exports, module) => {
 
 // node_modules/figlet/lib/node-figlet.js
 var require_node_figlet = __commonJS((exports, module) => {
-  var __dirname = "/kmp/vinsta/client/vinsta/node_modules/figlet/lib";
+  var __dirname = "/home/hangsia/projects/vinsta/client/vinsta/node_modules/figlet/lib";
   var figlet = require_figlet();
   var fs3 = import.meta.require("fs");
-  var path3 = import.meta.require("path");
-  var fontDir = path3.join(__dirname, "/../fonts/");
+  var path2 = import.meta.require("path");
+  var fontDir = path2.join(__dirname, "/../fonts/");
   figlet.loadFont = function(name, next) {
     if (figlet.figFonts[name]) {
       next(null, figlet.figFonts[name].options);
       return;
     }
-    fs3.readFile(path3.join(fontDir, name + ".flf"), { encoding: "utf-8" }, function(err, fontData) {
+    fs3.readFile(path2.join(fontDir, name + ".flf"), { encoding: "utf-8" }, function(err, fontData) {
       if (err) {
         return next(err);
       }
@@ -53322,7 +53322,7 @@ var require_node_figlet = __commonJS((exports, module) => {
     if (figlet.figFonts[name]) {
       return figlet.figFonts[name].options;
     }
-    var fontData = fs3.readFileSync(path3.join(fontDir, name + ".flf"), {
+    var fontData = fs3.readFileSync(path2.join(fontDir, name + ".flf"), {
       encoding: "utf-8"
     });
     fontData = fontData + "";
@@ -58803,7 +58803,7 @@ async function createVirtualMachine() {
       type: "input",
       name: "network",
       message: "Enter the network of the virtual machine:",
-      default: "br10"
+      default: "host-bridge"
     },
     {
       type: "input",
@@ -59056,44 +59056,54 @@ async function listallVirtualMachine() {
   }
 }
 // cmd/initVinsta.ts
-import * as fs2 from "fs";
-import * as path2 from "path";
-import os3 from "os";
+import fs2 from "fs";
 async function initVinsta() {
   const answers = await inquirer_default.prompt([
     {
       type: "input",
-      name: "host",
-      message: "Enter the host of the Vinsta server:",
-      default: "192.168.0.1"
+      name: "name",
+      message: "Enter the Vinsta server name you want to create:",
+      default: "Vinsta-Server-1"
     },
     {
       type: "input",
-      name: "port",
-      message: "Enter the port of the Vinsta server:",
-      default: "3333"
+      name: "databaseip",
+      message: "Enter the IP Address of the MongoDB:",
+      default: "localhost"
+    },
+    {
+      type: "input",
+      name: "databaseport",
+      message: "Enter the Port of the MongoDB:",
+      default: "27015"
+    },
+    {
+      type: "input",
+      name: "databasepassword",
+      message: "Enter the Password of the MongoDB:",
+      default: "zxcvahsdkjfqwer"
+    },
+    {
+      type: "input",
+      name: "masterkey",
+      message: "Create a master key that is used for accessing the Vinsta Server:",
+      default: "zxcvbnmasdfgqewruioasdfq123@@"
     }
   ]);
-  const homeDir = os3.homedir();
-  const vinstaDir = path2.join(homeDir, ".vinsta");
-  const sshDir = path2.join(homeDir, ".ssh");
-  if (!fs2.existsSync(vinstaDir)) {
-    fs2.mkdirSync(vinstaDir, { recursive: true });
+  const envFileContent = `
+NAME=${answers.name}
+DATABASE_IP=${answers.databaseip}
+DATABASE_PORT=${answers.databaseport}
+DATABASE_PASSWORD=${answers.databasepassword}
+MASTER_KEY=${answers.masterkey}
+`;
+  const envFilePath = "/opt/vinsta/.env";
+  try {
+    fs2.writeFileSync(envFilePath, envFileContent.trim());
+    console.log("Successfully initialized the server, all that left is running `vinsta --server`");
+  } catch (error) {
+    console.error("Error writing to .env file:", error.message);
   }
-  const sshContent = `Host *\n    StrictHostKeyChecking no\n    UserKnownHostsFile=/dev/null`;
-  const sshConfigPath = path2.join(sshDir, "config");
-  fs2.writeFileSync(sshConfigPath, sshContent);
-  console.log("SSH configuration updated successfully.");
-  const envFilePath = path2.join(vinstaDir, "env");
-  const envContent = `HOST=${answers.host}\nPORT=${answers.port}\n`;
-  fs2.writeFileSync(envFilePath, envContent);
-  console.log("Initialization state saved to " + envFilePath);
-}
-var __filename = "/kmp/vinsta/client/vinsta/cmd/initVinsta.ts";
-if (process.argv[1] === __filename) {
-  initVinsta().catch((error) => {
-    console.error("Error during initialization:", error);
-  });
 }
 // cmd/sshVirtualMachine.ts
 var import_ora9 = __toESM(require_ora(), 1);
@@ -59406,9 +59416,7 @@ if (process.argv.length <= 2) {
   });
 } else {
   if (options.init) {
-    initVinsta().catch((error) => {
-      console.error("Error during initialization:", error);
-    });
+    initVinsta();
   }
   if (options.create) {
     createVirtualMachine();
