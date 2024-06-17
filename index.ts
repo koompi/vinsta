@@ -20,7 +20,7 @@ app.use((req, res, next) => {
 
 // Form the MongoDB connection string using environment variables
 const { DATABASE_IP, DATABASE_PORT, DATABASE_NAME } = process.env;
-const DATABASE_URL = `mongodb://${DATABASE_IP}:${DATABASE_PORT}/${DATABASE_NAME}`;
+const DATABASE_URL = `mongodb://${DATABASE_IP}:${DATABASE_PORT}/vinstadb`;
 
 // Connect to MongoDB
 const connectDB = async () => {
