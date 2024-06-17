@@ -6,6 +6,7 @@ import { createVirtualMachine, stopVirtualMachine, startVirtualMachine,
    removeVirtualMachine, checkInfoVirtualMachine, sshVirtualMachine,
    listallVirtualMachine, initVinsta, updateVinsta, backupVirtualMachine,
    cloneVirtualMachine, restoreVirtualMachine} from "./cmd";
+import { runServer } from "./cmd/runServer";
 
 const figlet = require("figlet");
 
@@ -16,7 +17,8 @@ const program = new Command();
 program
   .version("1.0.8")
   .description("Vinsta for managing your virtual machine")
-  .option("-i, --init", "connect to the Vinsta server")
+  .option("-i, --init", "initialize Vinsta server")
+  .option("  , --server", "start Vinsta server")
   .option("-c, --create", "create a new virtual machine")
   .option("  , --clone", "clone a new virtual machine instead of install a fresh one")
   .option("-s, --start", "start a virtual machine")
@@ -68,6 +70,9 @@ if (process.argv.length <= 2) {
 } else {
   if (options.init) {
     initVinsta();
+  }
+  if (options.server) {
+    runServer();
   }
   if (options.create) {
     createVirtualMachine();

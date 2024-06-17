@@ -43763,7 +43763,7 @@ var require_util_inspect = __commonJS((exports, module) => {
 // node_modules/object-inspect/index.js
 var require_object_inspect = __commonJS((exports, module) => {
   var addNumericSeparator = function(num, str) {
-    if (num === Infinity || num === (-Infinity) || num !== num || num && num > -1000 && num < 1000 || $test.call(/e/, str)) {
+    if (num === Infinity || num === -Infinity || num !== num || num && num > -1000 && num < 1000 || $test.call(/e/, str)) {
       return str;
     }
     var sepRegex = /[0-9](?=(?:[0-9]{3})+(?![0-9]))/g;
@@ -53296,7 +53296,7 @@ var require_figlet = __commonJS((exports, module) => {
 
 // node_modules/figlet/lib/node-figlet.js
 var require_node_figlet = __commonJS((exports, module) => {
-  var __dirname = "/home/hangsia/projects/vinsta/client/vinsta/node_modules/figlet/lib";
+  var __dirname = "/home/xiren/projects/vinsta/client/vinsta/node_modules/figlet/lib";
   var figlet = require_figlet();
   var fs3 = import.meta.require("fs");
   var path2 = import.meta.require("path");
@@ -59058,6 +59058,21 @@ async function listallVirtualMachine() {
 // cmd/initVinsta.ts
 import fs2 from "fs";
 async function initVinsta() {
+  const { initOption } = await inquirer_default.prompt([
+    {
+      type: "list",
+      name: "initOption",
+      message: "Select an option to initialize:",
+      choices: ["Server", "Client"]
+    }
+  ]);
+  if (initOption === "Server") {
+    await initializeServer();
+  } else if (initOption === "Client") {
+    await initializeClient();
+  }
+}
+async function initializeServer() {
   const answers = await inquirer_default.prompt([
     {
       type: "input",
@@ -59075,7 +59090,7 @@ async function initVinsta() {
       type: "input",
       name: "databaseport",
       message: "Enter the Port of the MongoDB:",
-      default: "27015"
+      default: "27017"
     },
     {
       type: "input",
@@ -59100,10 +59115,50 @@ MASTER_KEY=${answers.masterkey}
   const envFilePath = "/opt/vinsta/.env";
   try {
     fs2.writeFileSync(envFilePath, envFileContent.trim());
-    console.log("Successfully initialized the server, all that left is running `vinsta --server`");
+    console.log("Successfully initialized the Vinsta Server, all that left is running `vinsta --server`");
   } catch (error) {
     console.error("Error writing to .env file:", error.message);
   }
+}
+async function initializeClient() {
+  const answers = await inquirer_default.prompt([
+    {
+      type: "input",
+      name: "name",
+      message: "Create your own nickname:",
+      default: "jiren"
+    },
+    {
+      type: "input",
+      name: "number",
+      message: "Enter your mobile phone number:",
+      default: "85515780491"
+    },
+    {
+      type: "input",
+      name: "databaseip",
+      message: "Enter the IP Address of the MongoDB:",
+      default: "localhost"
+    },
+    {
+      type: "input",
+      name: "databaseport",
+      message: "Enter the Port of the MongoDB:",
+      default: "27017"
+    },
+    {
+      type: "input",
+      name: "databasepassword",
+      message: "Enter the Password of the MongoDB:",
+      default: "zxcvahsdkjfqwer"
+    },
+    {
+      type: "input",
+      name: "masterkey",
+      message: "Enter the master key that is used for accessing the Vinsta Server:",
+      default: "zxcvbnmasdfgqewruioasdfq123@@"
+    }
+  ]);
 }
 // cmd/sshVirtualMachine.ts
 var import_ora9 = __toESM(require_ora(), 1);
@@ -59381,10 +59436,59 @@ async function restoreVirtualMachine() {
     }
   }
 }
+// cmd/runServer.ts
+var import_ora14 = __toESM(require_ora(), 1);
+import {execSync as execSync2} from "child_process";
+
+// shells/executeCommand.ts
+import {exec} from "child_process";
+var executeCommand = (command) => {
+  return new Promise((resolve, reject) => {
+    exec(command, (error, stdout, stderr) => {
+      if (error) {
+        reject(error);
+        return;
+      }
+      if (stderr) {
+        reject(new Error(stderr));
+        return;
+      }
+      resolve(stdout);
+    });
+  });
+};
+
+// cmd/runServer.ts
+var hasSudo2 = function() {
+  try {
+    execSync2("sudo true");
+    return true;
+  } catch (error) {
+    return false;
+  }
+};
+async function runServer() {
+  try {
+    if (!hasSudo2()) {
+      console.error("Error: This function requires sudo privileges to proceed.");
+      console.log("Try running: 'sudo !!'");
+      process.exit(1);
+    }
+    process.chdir("/opt/vinsta/");
+    executeCommand("node /opt/vinsta/out/index.js");
+    const HOST = "0.0.0.0";
+    const PORT = 3333;
+    console.log(`Vinsta server is running on http://${HOST}:${PORT}`);
+  } catch (error) {
+    import_ora14.default().fail("An error occurred while updating Vinsta");
+    console.error("Error:", error.message);
+  }
+}
+
 // index.ts
 var figlet = require_node_figlet();
 var program2 = new Command;
-program2.version("1.0.8").description("Vinsta for managing your virtual machine").option("-i, --init", "connect to the Vinsta server").option("-c, --create", "create a new virtual machine").option("  , --clone", "clone a new virtual machine instead of install a fresh one").option("-s, --start", "start a virtual machine").option("-o, --stop", "stop a virtual machine").option("-b, --backup", "backup a virtual machine").option("  , --restore", "restore a a backup virtual machine").option("-r, --remove", "remove a virtual machine").option("-k, --check", "check information of a virtual machine").option("-l, --listall", "list all of the available virtual machine").option("-u, --update", "Update Vinsta to the latest version").parse(process.argv);
+program2.version("1.0.8").description("Vinsta for managing your virtual machine").option("-i, --init", "initialize Vinsta server").option("  , --server", "start Vinsta server").option("-c, --create", "create a new virtual machine").option("  , --clone", "clone a new virtual machine instead of install a fresh one").option("-s, --start", "start a virtual machine").option("-o, --stop", "stop a virtual machine").option("-b, --backup", "backup a virtual machine").option("  , --restore", "restore a a backup virtual machine").option("-r, --remove", "remove a virtual machine").option("-k, --check", "check information of a virtual machine").option("-l, --listall", "list all of the available virtual machine").option("-u, --update", "Update Vinsta to the latest version").parse(process.argv);
 var options = program2.opts();
 var actions = {
   "1. Create a new virtual machine": createVirtualMachine,
@@ -59417,6 +59521,9 @@ if (process.argv.length <= 2) {
 } else {
   if (options.init) {
     initVinsta();
+  }
+  if (options.server) {
+    runServer();
   }
   if (options.create) {
     createVirtualMachine();
