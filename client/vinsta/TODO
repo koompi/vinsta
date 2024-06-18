@@ -69,3 +69,8 @@ sudo resize2fs /dev/vda2
 
 sudo parted /dev/vda resizepart 2 100%
 sudo resize2fs /dev/vda2
+
+
+
+#### This command give local ip adress
+ip route get 1.2.3.4 | awk '{print $7}'

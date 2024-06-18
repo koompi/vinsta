@@ -4,7 +4,6 @@ import mongoose from "mongoose";
 import cors from "cors";
 import dotenv from "dotenv";
 import vmRoutes from "./routes/vmRoutes";
-import { initializeClient } from "./client/vinsta/cmd/initVinsta";
 
 dotenv.config();  // Load environment variables from .env file
 
@@ -37,16 +36,9 @@ const connectDB = async () => {
 
 connectDB();
 
-app.use("/api", vmRoutes);
-// Assume '/initialize' is your route for client initialization
-app.get('/initialize', async (req, res) => {
-  // Pass req to initializeClient function
-  await initializeClient(req);
-
-  // Respond to the client as needed
-  res.send('Initialization complete'); 
-});
 app.use(express.static(__dirname + '/public'));
+app.use("/api", vmRoutes);
+
 
 const PORT = Number(process.env.PORT || 3333);
 const HOST = process.env.HOST || '0.0.0.0';

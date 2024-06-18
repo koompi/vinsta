@@ -20,6 +20,8 @@
     "typescript": "^5.0.0"
   },
   "dependencies": {
+    "@types/bcrypt": "^5.0.2",
+    "@types/express-session": "^1.18.0",
     "@types/semver": "^7.5.8",
     "aws-sdk": "^2.1642.0",
     "axios": "^1.7.2",

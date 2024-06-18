@@ -3,39 +3,23 @@ import mongoose from "mongoose";
 import bcrypt from "bcrypt";
 import { userSchema } from "./models/userSchema";
 import { serverSchema } from "./models/serverSchema";
-import express from 'express';
-import session from 'express-session';
+import express from "express";
+import { writeEnvFile } from '../shells/writeEnvFile';
 
 // Model for User Account
-const User = mongoose.model('User', userSchema);
-const Server = mongoose.model('Server', serverSchema);
-
-// MongoDB Connection Setup
-mongoose.connect('mongodb://localhost:27017/vinsta', {});
-const db = mongoose.connection;
+const User = mongoose.model("User", userSchema);
+const Server = mongoose.model("Server", serverSchema);
 
 const app = express();
 
-// Setup express-session middleware
-app.use(session({
-  secret: '123456789', // Replace with your own secret key for session encryption
-  resave: false,
-  saveUninitialized: false,
-  cookie: {
-    secure: false, // Set to true if using HTTPS
-    maxAge: 24 * 60 * 60 * 1000, // 24 hours (session expiration time)
-  },
-}));
-
-
-export async function initVinsta() {
+export async function initVinsta(req: express.Request) {
   const { initOption } = await inquirer.prompt([
     {
       type: "list",
       name: "initOption",
       message: "Select an option to initialize:",
       choices: ["Server", "Client"],
-    }
+    },
   ]);
 
   if (initOption === "Server") {
@@ -69,7 +53,7 @@ async function initializeServer() {
       type: "input",
       name: "databaseip",
       message: "Enter the IP Address of the MongoDB:",
-      default: "localhost",
+      default: "127.0.0.1",
     },
     {
       type: "input",
@@ -86,35 +70,46 @@ async function initializeServer() {
     {
       type: "password",
       name: "masterkey",
-      message: "Create a master key that is used for accessing the Vinsta Server:",
-      mask: '*', // Mask input for security
+      message:
+        "Create a master key that is used for accessing the Vinsta Server:",
+      mask: "*", // Mask input for security
     },
   ]);
 
-  // Connect to MongoDB
-  await mongoose.connect(`mongodb://${answers.databaseip}:${answers.databaseport}/vinsta`, {
-    user: 'admin',
-    pass: answers.databasepassword,
-  });
+  try {
+    // Connect to MongoDB
+    await mongoose.connect(
+      `mongodb://${answers.databaseip}:${answers.databaseport}/vinstadb`);
+      // {
+      //   user: "admin",
+      //   pass: answers.databasepassword,
+    console.log("MongoDB connected successfully");
 
-  // Hash the master key
-  const hashedKey = await bcrypt.hash(answers.masterkey, 10);
+    // Hash the master key
+    const hashedKey = await bcrypt.hash(answers.masterkey, 10);
 
-  // Store hashed master key and server configuration in MongoDB
-  const newServer = new Server({
-    name: answers.name,
-    ip: answers.ip,
-    port: answers.port,
-    masterKey: hashedKey,
-  });
+    // Store hashed master key and server configuration in MongoDB
+    const newServer = new Server({
+      name: answers.name,
+      ip: answers.ip,
+      port: answers.port,
+      masterKey: hashedKey,
+    });
 
-  await newServer.save();
+    await newServer.save();
 
-  console.log('Successfully initialized the Vinsta Server');
-  mongoose.disconnect();
+    console.log("Successfully initialized the Vinsta Server");
+    mongoose.disconnect();
+
+    // Write to .env file
+    writeEnvFile(answers.databaseip, answers.databaseport);
+  } catch (error: any) {
+    console.error("MongoDB connection failed:", error.message);
+    process.exit(1); // Exit process with failure
+  }
 }
 
-export async function initializeClient(req: express.Request) {
+export async function initializeClient() {
   const answers = await inquirer.prompt([
     {
       type: "input",
@@ -132,7 +127,7 @@ export async function initializeClient(req: express.Request) {
       type: "input",
       name: "databaseip",
       message: "Enter the IP Address of the MongoDB:",
-      default: "localhost",
+      default: "127.0.0.1",
     },
     {
       type: "input",
@@ -149,37 +144,43 @@ export async function initializeClient(req: express.Request) {
     {
       type: "password",
       name: "masterkey",
-      message: "Enter the master key that is used for accessing the Vinsta Server:",
-      mask: '*', // Mask input for security
+      message:
+        "Enter the master key that is used for accessing the Vinsta Server:",
+      mask: "*", // Mask input for security
     },
   ]);
 
   try {
     // Connect to MongoDB
-    await mongoose.connect(`mongodb://${answers.databaseip}:${answers.databaseport}/vinsta`, {
-      user: 'admin',
-      pass: answers.databasepassword,
-    });
+    await mongoose.connect(
+      `mongodb://${answers.databaseip}:${answers.databaseport}/vinstadb`);
+      // {
+      //   user: "admin",
+      //   pass: answers.databasepassword,
+      // }
 
     // Retrieve server details from MongoDB
     const serverDetails = await Server.findOne({});
 
     if (!serverDetails) {
-      console.error('Server details not found in MongoDB.');
+      console.error("Server details not found in MongoDB.");
       mongoose.disconnect();
       return;
     }
 
     // Compare provided master key with stored hashed key
-    const isMatch = await bcrypt.compare(answers.masterkey, serverDetails.masterKey);
+    const isMatch = await bcrypt.compare(
+      answers.masterkey,
+      serverDetails.masterKey || ""
+    );
     if (!isMatch) {
-      console.error('Invalid master key.');
+      console.error("Invalid master key.");
       mongoose.disconnect();
       return;
     }
 
     // Proceed with account creation or login
-    console.log('Master key verified. Creating account or logging in...');
+    console.log("Master key verified. Creating account or logging in...");
 
     // Check if the user already exists
     let user = await User.findOne({ name: answers.name });
@@ -195,28 +196,12 @@ export async function initializeClient(req: express.Request) {
       await user.save();
       console.log(`New account created for ${answers.name}`);
     } else {
-      console.log(`Logging in as ${answers.name}`);
+      console.log(`Username already existed: ${answers.name}`);
     }
 
-    // Store user information in session (make sure to pass req object to the function)
-    storeUserInSession(req, user);
-
-    console.log(`Login state stored for ${answers.name}`);
     mongoose.disconnect(); // Disconnect from MongoDB
   } catch (error) {
-    console.error('Error during initialization:', error);
+    console.error("Error during initialization:", error);
     mongoose.disconnect();
   }
 }
-
-// Function to store user in session
-function storeUserInSession(req: any, user: any) {
-  if (req && req.session) {
-    req.session.user = user;
-  } else {
-    console.error('Cannot store user in session: req or req.session is undefined.');
-  }
-}
-
-// // Export app for testing purposes or further integration
-// export default app;
