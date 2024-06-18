@@ -1,8 +1,12 @@
 import mongoose from 'mongoose';
 import { serverSchema } from "../cmd/models/serverSchema";
 import dotenv from 'dotenv';
-dotenv.config();
+import * as path from 'path';
 
+
+// Dynamically form the path to your .env file
+const envPath = path.resolve(__dirname, '/opt/vinsta/client/vinsta/.env');
+dotenv.config({ path: envPath });
 // Model for Server
 const Server = mongoose.model("Server", serverSchema);
 
