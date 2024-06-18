@@ -12,7 +12,7 @@ const Server = mongoose.model("Server", serverSchema);
 
 const app = express();
 
-export async function initVinsta(req: express.Request) {
+export async function initVinsta() {
   const { initOption } = await inquirer.prompt([
     {
       type: "list",

@@ -12,3 +12,4 @@ export * from "./updateVinsta";
 export * from "./cloneVirtualMachine";
 export * from "./backupVirtualMachine";
 export * from "./restoreVirtualMachine";
+export * from "./runServer";

@@ -5,8 +5,7 @@ import inquirer from "inquirer";
 import { createVirtualMachine, stopVirtualMachine, startVirtualMachine,
    removeVirtualMachine, checkInfoVirtualMachine, sshVirtualMachine,
    listallVirtualMachine, initVinsta, updateVinsta, backupVirtualMachine,
-   cloneVirtualMachine, restoreVirtualMachine} from "./cmd";
-import { runServer } from "./cmd/runServer";
+   cloneVirtualMachine, restoreVirtualMachine, runServer} from "./cmd";
 
 const figlet = require("figlet");
 
