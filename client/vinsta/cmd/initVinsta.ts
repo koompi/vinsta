@@ -4,7 +4,7 @@ import bcrypt from "bcrypt";
 import { userSchema } from "./models/userSchema";
 import { serverSchema } from "./models/serverSchema";
 import express from "express";
-import { writeEnvFile } from '../shells/writeEnvFile';
+import { writeServerEnvFile, writeClientEnvFile } from '../shells/writeEnvFile';
 
 // Model for User Account
 const User = mongoose.model("User", userSchema);
@@ -102,7 +102,7 @@ async function initializeServer() {
     mongoose.disconnect();
 
     // Write to .env file
-    writeEnvFile(answers.databaseip, answers.databaseport);
+    writeServerEnvFile(answers.databaseip, answers.databaseport);
   } catch (error: any) {
     console.error("MongoDB connection failed:", error.message);
     process.exit(1); // Exit process with failure
@@ -195,6 +195,8 @@ export async function initializeClient() {
 
       await user.save();
       console.log(`New account created for ${answers.name}`);
+    // Write to .env file
+    writeClientEnvFile(answers.databaseip, answers.databaseport);
     } else {
       console.log(`Username already existed: ${answers.name}`);
     }

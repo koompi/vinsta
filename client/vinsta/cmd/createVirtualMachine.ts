@@ -1,10 +1,20 @@
 import inquirer from "inquirer";
 import axios from "axios";
 import ora from "ora"; // Import ora library
-import { getServerConfig } from "../utils/config";
+import { retrieveServer } from "../utils/retrieveServer";
 
 export async function createVirtualMachine() {
-  
+  const serverChoices = await retrieveServer();
+  // Prompt user to select a server
+  const { selectedServer } = await inquirer.prompt([
+    {
+      type: "list",
+      name: "selectedServer",
+      message: "Select a Vinsta server to list all virtual machines:",
+      choices: serverChoices,
+    },
+  ]);
+
 
   const answers = await inquirer.prompt([
     // Prompt user for input
@@ -59,14 +69,8 @@ export async function createVirtualMachine() {
   ]);
   const spinner = ora("Creating virtual machine... Please wait. This process may take up to 1 minute.").start(); // Create spinner instance
 
-  // Read environment variables from $HOME/.vinsta/env
-  const serverConfig = getServerConfig();
-  if (!serverConfig) {
-    return;
-  }
-
-  const { host, port } = serverConfig;
-  const url = `http://${host}:${port}/api/create`;
+  const { ip, port } = selectedServer;
+  const url = `http://${ip}:${port}/api/create`;
 
 
   try {

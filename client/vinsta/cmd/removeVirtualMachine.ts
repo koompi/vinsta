@@ -1,10 +1,21 @@
 import inquirer from "inquirer";
-import ora from 'ora';
-import { getServerConfig } from "../utils/config";
+import ora from "ora";
 import axios from "axios";
-import response from 'express';
+import response from "express";
+import { retrieveServer } from "../utils/retrieveServer";
 
 export async function removeVirtualMachine() {
+  const serverChoices = await retrieveServer();
+  // Prompt user to select a server
+  const { selectedServer } = await inquirer.prompt([
+    {
+      type: "list",
+      name: "selectedServer",
+      message: "Select a Vinsta server to list all virtual machines:",
+      choices: serverChoices,
+    },
+  ]);
+
   const answers = await inquirer.prompt([
     {
       type: "input",
@@ -14,24 +25,16 @@ export async function removeVirtualMachine() {
     },
   ]);
   const spinner = ora("Sending request...").start(); // Start spinner instance
-  
-  // Read environment variables from $HOME/.vinsta/env
-  const serverConfig = getServerConfig();
-  if (!serverConfig) {
-    return;
-  }
 
-  const { host, port } = serverConfig;
-  const url = `http://${host}:${port}/api/remove`;
+  const { ip, port } = selectedServer;
+  const url = `http://${ip}:${port}/api/remove`;
 
   try {
     const response = await axios.post(url, answers, {
       headers: {
-        "Content-Type": "application/json"
-      }
+        "Content-Type": "application/json",
+      },
     });
-
-  
 
     // Check if the virtual machine was successfully removed
     if (response.data.message === "VM successfully removed") {
@@ -48,7 +51,11 @@ export async function removeVirtualMachine() {
     }
     if (error.response) {
       // Server responded with a status other than 200 range
-      console.error("Server responded with an error:", error.response.status, error.response.data);
+      console.error(
+        "Server responded with an error:",
+        error.response.status,
+        error.response.data
+      );
     } else if (error.request) {
       // No response received
       console.error("No response received from the server:", error.request);

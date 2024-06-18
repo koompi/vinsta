@@ -2,33 +2,14 @@ import mongoose from "mongoose";
 import ora from "ora";
 import axios from "axios";
 import inquirer from "inquirer";
-import { serverSchema } from "./models/serverSchema";
+import { retrieveServer } from "../utils/retrieveServer";
 
-// Model for Server
-const Server = mongoose.model("Server", serverSchema);
 
 // Function to list all Vinsta servers and virtual machines
 export async function listallVirtualMachine() {
   try {
-    // Connect to MongoDB
-    await mongoose.connect("mongodb://127.0.0.1:27017/vinstadb");
-    console.log("MongoDB connected successfully");
 
-    // Retrieve all servers from the database
-    const servers = await Server.find({});
-
-    if (servers.length === 0) {
-      console.log("No Vinsta servers found in the database");
-      mongoose.disconnect();
-      return;
-    }
-
-    // Prepare server choices for inquirer
-    const serverChoices = servers.map((server) => ({
-      name: server.name,
-      value: server,
-    }));
-
+    const serverChoices = await retrieveServer();
     // Prompt user to select a server
     const { selectedServer } = await inquirer.prompt([
       {
