@@ -10,6 +10,17 @@ check_bun_installed() {
   fi
 }
 
+# Function to set up vinsta server
+setup_vinsta_server() {
+  sudo git clone https://github.com/koompi/vinsta /opt/vinsta
+  sudo chown -R -v $USER /opt/vinsta
+  cd /opt/vinsta
+  git checkout vinsta-v2-redesign
+  bun install
+  bun run build
+}
+
+
 # Function to download and set up vinsta CLI
 setup_vinsta_cli() {
   local url="https://github.com/koompi/vinsta/raw/main/client/vinsta/out/index.js"
@@ -99,5 +110,6 @@ else
 fi
 
 setup_vinsta_cli
+setup_vinsta_server
 
 echo "Setup completed successfully."
