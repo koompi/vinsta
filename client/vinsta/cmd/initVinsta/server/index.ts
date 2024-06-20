@@ -4,8 +4,10 @@ import { serverSchema } from "../../models/serverSchema";
 import { MongoDBInit } from "./mongodb-init";
 import bcrypt from "bcrypt";
 import { writeServerEnvFile } from "../../../shells/writeEnvFile";
+import { setupKVMBridge, setupHostbridge } from "./network";
 
 const Server = mongoose.model("Server", serverSchema);
+
 export async function initializeServer() {
     const answers = await inquirer.prompt([
         {
@@ -17,7 +19,7 @@ export async function initializeServer() {
         {
             type: "input",
             name: "ip",
-            message: "Enter the host ip address:",
+            message: "Enter the host IP address:",
             default: "192.168.18.9",
         },
         {
@@ -35,7 +37,7 @@ export async function initializeServer() {
         {
             type: "input",
             name: "os",
-            message: "Enter Linux Distrobution: Arch or Ubuntu",
+            message: "Enter Linux Distribution (Arch or Ubuntu):",
             default: "arch",
         },
         {
@@ -53,19 +55,31 @@ export async function initializeServer() {
         {
             type: "password",
             name: "masterkey",
-            message:
-                "Create a master key that is used for accessing the Vinsta Server:",
+            message: "Create a master key that is used for accessing the Vinsta Server:",
             mask: "*", // Mask input for security
         },
+        {
+            type: "confirm",
+            name: "allowNetworkAccess",
+            message: "Do you want to allow your VM to be accessible by everyone in the network? (Recommended only if the server is using Ethernet instead of WLAN)",
+            default: false,
+        },
     ]);
+
     try {
+        if (answers.allowNetworkAccess) {
+            console.log("Setting up network bridge for network-wide access...");
+            await setupHostbridge();
+            await setupKVMBridge();
+        } else {
+            console.log("Skipping network bridge setup.");
+        }
+
         await MongoDBInit({ip: answers.databaseip, port: answers.databaseport, password: answers.databasepassword, os: answers.os});
         // Connect to MongoDB
         await mongoose.connect(
-            `mongodb://admin:${answers.databasepassword}@${answers.databaseip}:${answers.databaseport}/admin`);
-        // {
-        //   user: "admin",
-        //   pass: answers.databasepassword,
+            `mongodb://admin:${answers.databasepassword}@${answers.databaseip}:${answers.databaseport}/admin`
+        );
         console.log("MongoDB connected successfully");
 
         // Hash the master key
@@ -80,14 +94,14 @@ export async function initializeServer() {
         });
 
         await newServer.save();
-
         console.log("Successfully initialized the Vinsta Server");
+
         mongoose.disconnect();
 
         // Write to .env file
         writeServerEnvFile(answers.databaseip, answers.databaseport, answers.databasepassword);
     } catch (error: any) {
-        console.error("MongoDB connection failed:", error.message);
+        console.error("Failed to setup the server:", error.message);
         process.exit(1); // Exit process with failure
     }
 }

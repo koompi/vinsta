@@ -10,16 +10,7 @@ check_bun_installed() {
   fi
 }
 
-
-setup_vinsta_server() {
-  sudo git clone https://github.com/koompi/vinsta /opt/vinsta
-  sudo chown -R -v $USER /opt/vinsta
-  cd /opt/vinsta
-  bun install
-  bun run build
-}
-
-# Function to download and set up vinsta
+# Function to download and set up vinsta CLI
 setup_vinsta_cli() {
   local url="https://github.com/koompi/vinsta/raw/main/client/vinsta/out/index.js"
   local destination="/usr/bin/vinsta"
@@ -41,7 +32,72 @@ setup_vinsta_cli() {
   echo "vinsta has been set up successfully."
 }
 
-# Check for bun and setup vinsta
+# Function to install required packages on Arch Linux
+install_arch_packages() {
+  local arch_packages=(
+    curl
+    wget
+    virt-manager
+    virt-viewer
+    qemu
+    qemu-arch-extra
+    edk2-ovmf
+    vde2
+    ebtables
+    dnsmasq
+    bridge-utils
+    openbsd-netcat
+    libguestfs
+    guestfs-tools
+    expect
+    netplan
+  )
+
+  echo "Updating package database and installing required packages for Arch Linux..."
+  sudo pacman -Syu --needed "${arch_packages[@]}"
+}
+
+# Function to install required packages on Ubuntu
+install_ubuntu_packages() {
+  local ubuntu_packages=(
+    curl
+    wget
+    virt-manager
+    virt-viewer
+    qemu-system-x86
+    qemu-kvm
+    libvirt-daemon-system
+    bridge-utils
+    virtinst
+    ovmf
+    vde2
+    ebtables
+    dnsmasq
+    netcat-openbsd
+    libguestfs-tools
+    expect
+    netplan
+  )
+
+  echo "Updating package database and installing required packages for Ubuntu..."
+  sudo apt update
+  sudo apt install -y "${ubuntu_packages[@]}"
+}
+
+# Main script
 check_bun_installed
+
+if command -v pacman &>/dev/null; then
+  # Arch Linux detected
+  install_arch_packages
+elif command -v apt-get &>/dev/null || command -v apt &>/dev/null; then
+  # Ubuntu (and Debian-based) detected
+  install_ubuntu_packages
+else
+  echo "Unsupported distribution. Please install required packages manually."
+  exit 1
+fi
+
 setup_vinsta_cli
-setup_vinsta_server
+
+echo "Setup completed successfully."
