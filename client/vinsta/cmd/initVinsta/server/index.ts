@@ -85,7 +85,7 @@ export async function initializeServer() {
         mongoose.disconnect();
 
         // Write to .env file
-        writeServerEnvFile(answers.databaseip, answers.databaseport);
+        writeServerEnvFile(answers.databaseip, answers.databaseport, answers.databasepassword);
     } catch (error: any) {
         console.error("MongoDB connection failed:", error.message);
         process.exit(1); // Exit process with failure

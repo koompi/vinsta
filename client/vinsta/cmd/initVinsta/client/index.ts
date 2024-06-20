@@ -94,7 +94,7 @@ export async function initializeClient() {
         await user.save();
         console.log(`New account created for ${answers.name}`);
       // Write to .env file
-      writeClientEnvFile(answers.databaseip, answers.databaseport);
+      writeClientEnvFile(answers.databaseip, answers.databaseport, answers.databasepassword);
       } else {
         console.log(`Username already existed: ${answers.name}`);
       }

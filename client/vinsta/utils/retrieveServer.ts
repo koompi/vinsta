@@ -13,9 +13,9 @@ const Server = mongoose.model("Server", serverSchema);
 export async function retrieveServer() {
   try {
     // Form the MongoDB connection string using environment variables
-    const { DATABASE_IP, DATABASE_PORT, DATABASE_NAME } = process.env;
+    const { DATABASE_IP, DATABASE_PORT, DATABASE_PASSWORD } = process.env;
     // Connect to MongoDB
-    await mongoose.connect(`mongodb://${DATABASE_IP}:${DATABASE_PORT}/vinstadb`);
+    await mongoose.connect(`mongodb://admin:${DATABASE_PASSWORD}@${DATABASE_IP}:${DATABASE_PORT}/admin`);
     console.log("MongoDB connected successfully");
 
     // Retrieve all servers from the database

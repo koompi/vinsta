@@ -3,6 +3,7 @@ version: "3.7"
 services:
   mongo:
     image: mongo:latest
+    restart: always
     container_name: ${database_name}
     environment:
       MONGO_INITDB_ROOT_USERNAME: ${admin_user}
