@@ -54,7 +54,7 @@ export async function initializeClient() {
     try {
       // Connect to MongoDB
       await mongoose.connect(
-        `mongodb://admin:${answers.databasepassword}@${answers.databaseip}:${answers.databaseport}/vinstadb`);
+        `mongodb://admin:${answers.databasepassword}@${answers.databaseip}:${answers.databaseport}/admin`);
 
   
       // Retrieve server details from MongoDB

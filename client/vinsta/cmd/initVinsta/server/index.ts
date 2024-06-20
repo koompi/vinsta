@@ -4,7 +4,9 @@ import { serverSchema } from "../../models/serverSchema";
 import { MongoDBInit } from "./mongodb-init";
 import bcrypt from "bcrypt";
 import { writeServerEnvFile } from "../../../shells/writeEnvFile";
+import { downloadKOOMPIServerISO } from "../../../shells/downloadKOOMPIServerISO";
 import { setupKVMBridge, setupHostbridge } from "./network";
+import { executeCommand } from "../../../shells/executeCommand";
 
 const Server = mongoose.model("Server", serverSchema);
 
@@ -63,10 +65,27 @@ export async function initializeServer() {
             name: "allowNetworkAccess",
             message: "Do you want to allow your VM to be accessible by everyone in the network? (Recommended only if the server is using Ethernet instead of WLAN)",
             default: false,
+        }, 
+        {
+            type: "confirm",
+            name: "downloadKOOMPIiso",
+            message: "Do you want to use KOOMPI Server iso?",
+            default: true,
         },
+        {
+            type: "confirm",
+            name: "downloadPreinstalledImage",
+            message: "Do you want to use KOOMPI ISO Preinstalled image?",
+            default: true,
+        },
+
     ]);
 
     try {
+        if (answers.downloadKOOMPIiso) {
+            await downloadKOOMPIServerISO();
+        }
+
         if (answers.allowNetworkAccess) {
             console.log("Setting up network bridge for network-wide access...");
             await setupHostbridge();
@@ -75,7 +94,7 @@ export async function initializeServer() {
             console.log("Skipping network bridge setup.");
         }
 
-        await MongoDBInit({ip: answers.databaseip, port: answers.databaseport, password: answers.databasepassword, os: answers.os});
+        await MongoDBInit({ ip: answers.databaseip, port: answers.databaseport, password: answers.databasepassword, os: answers.os });
         // Connect to MongoDB
         await mongoose.connect(
             `mongodb://admin:${answers.databasepassword}@${answers.databaseip}:${answers.databaseport}/admin`

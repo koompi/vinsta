@@ -2,8 +2,6 @@ import { exec } from 'child_process';
 import { promises as fs } from 'fs';
 import { findInterfacesWithInternet } from '../../../../shells/findInterfaces'; // Adjust the import path as needed
 import { executeCommand } from '../../../../shells/executeCommand';
-import * as path from "path";
-import { mkdir } from "../../../../shells/mkdir";
 
 export async function setupHostbridge() {
     try {
@@ -29,8 +27,6 @@ network:
         stp: true
         forward-delay: 15
 `;
-        const dirPath = path.join(__dirname, '/etc/netplan');
-        mkdir(dirPath);
         // Write the Netplan configuration to /etc/netplan/01-kvmbridge.yaml
         await fs.writeFile('/etc/netplan/01-kvmbridge.yaml', netplanConfig);
         console.log('Netplan configuration file created successfully.');
@@ -79,7 +75,7 @@ const kvmBridge = `
 </network>
 `;
     try {
-        await fs.writeFile('kvmbridge.yml', kvmBridge);
+        await fs.writeFile('kvmbridge.xml', kvmBridge);
         console.log('KVM Bridge file created successfully.');
         await enableKVMBridge();
     } catch (error) {
@@ -90,8 +86,8 @@ const kvmBridge = `
 async function enableKVMBridge() {
     try {
     await executeCommand("sudo virsh net-define kvmbridge.xml");
-    await executeCommand("sudo virsh net-start host-bridge");
-    await executeCommand("sudo virsh net-autostart host-bridge");
+    await executeCommand("sudo virsh net-start br0");
+    await executeCommand("sudo virsh net-autostart br0");
     console.log("KVM bridge enabled successfully.");
     
     }

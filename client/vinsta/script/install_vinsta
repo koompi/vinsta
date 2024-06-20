@@ -23,49 +23,20 @@ setup_vinsta_server() {
 
 # Function to download and set up vinsta CLI
 setup_vinsta_cli() {
-  local url="https://github.com/koompi/vinsta/raw/main/client/vinsta/out/index.js"
-  local destination="/usr/bin/vinsta"
-
-  echo "Downloading vinsta from $url..."
-  curl -L $url -o /tmp/vinsta
-
-  if [ $? -ne 0 ]; then
-    echo "Failed to download vinsta. Exiting."
-    exit 1
-  fi
-
-  echo "Moving vinsta to $destination..."
-  sudo mv /tmp/vinsta $destination
-
-  echo "Setting execute permission for $destination..."
-  sudo chmod +x $destination
-
-  echo "vinsta has been set up successfully."
+  cd /opt/vinsta/client/vinsta
+  bun install
+  make install
 }
 
 # Function to install required packages on Arch Linux
 install_arch_packages() {
-  local arch_packages=(
-    curl
-    wget
-    virt-manager
-    virt-viewer
-    qemu
-    qemu-arch-extra
-    edk2-ovmf
-    vde2
-    ebtables
-    dnsmasq
-    bridge-utils
-    openbsd-netcat
-    libguestfs
-    guestfs-tools
-    expect
-    netplan
-  )
-
   echo "Updating package database and installing required packages for Arch Linux..."
-  sudo pacman -Syu --needed "${arch_packages[@]}"
+  sudo pacman -Syu --needed --noconfirm curl wget virt-manager virt-viewer qemu-git qemu-arch-extra \
+  edk2-ovmf vde2 dnsmasq bridge-utils openbsd-netcat libguestfs \
+  guestfs-tools expect netplan
+
+  ## Enable the libvirt service
+  sudo systemctl enable --now libvirtd
 }
 
 # Function to install required packages on Ubuntu
@@ -109,7 +80,8 @@ else
   exit 1
 fi
 
-setup_vinsta_cli
 setup_vinsta_server
+setup_vinsta_cli
+
 
 echo "Setup completed successfully."

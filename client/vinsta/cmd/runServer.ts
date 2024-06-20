@@ -1,5 +1,5 @@
 import { execSync } from "child_process";
-import { executeCommand } from "../shells/executeCommand";
+import { cmdwithprogress, executeCommand } from "../shells/executeCommand";
 
 // Function to check for sudo privileges
 function hasSudo(): boolean {
@@ -23,11 +23,8 @@ export async function runServer() {
     }
 
     process.chdir("/opt/vinsta/");
-    executeCommand("node out/index.js");
-    const HOST = "0.0.0.0"; // Replace with your actual host if necessary
-    const PORT = 3333;
+    cmdwithprogress("node out/index.js");
 
-    console.log(`Vinsta server is running on http://${HOST}:${PORT}`);
   } catch (error: any) {
     console.error("Error:", error.message);
   }
