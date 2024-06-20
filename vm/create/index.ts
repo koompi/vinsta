@@ -1,7 +1,7 @@
 import { executeCommand } from '../../shells/executeCommand';
 import { getIpAddressFromMac } from '../../client/vinsta/shells/getIpAddressFromMac';
 
-import { VMOptions } from '../../types/VMOptionsType';
+import  type { VMOptions } from '../../types/VMOptionsType';
 
 
 
