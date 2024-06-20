@@ -1,12 +1,12 @@
 import inquirer from "inquirer";
 import mongoose from "mongoose";
-import { serverSchema } from "../../models/serverSchema";
+import { serverSchema } from "../../../../../models/serverSchema";
 import { MongoDBInit } from "./mongodb-init";
 import bcrypt from "bcrypt";
 import { writeServerEnvFile } from "../../../shells/writeEnvFile";
 import { downloadKOOMPIServerISO } from "../../../shells/downloadKOOMPIServerISO";
-import { setupKVMBridge, setupHostbridge } from "./network";
-import { executeCommand } from "../../../shells/executeCommand";
+import { downloadPreinstalledImage } from "../../../shells/downloadPreinstalledImage";
+import { setupKVMBridge, setupHostbridge, enableDefaultInterface } from "./network";
 
 const Server = mongoose.model("Server", serverSchema);
 
@@ -86,12 +86,18 @@ export async function initializeServer() {
             await downloadKOOMPIServerISO();
         }
 
+        if (answers.downloadPreinstalledImage) {
+            await downloadPreinstalledImage();
+        }
+
         if (answers.allowNetworkAccess) {
             console.log("Setting up network bridge for network-wide access...");
             await setupHostbridge();
             await setupKVMBridge();
         } else {
             console.log("Skipping network bridge setup.");
+            console.log("Enable Default network instead.");
+            enableDefaultInterface();
         }
 
         await MongoDBInit({ ip: answers.databaseip, port: answers.databaseport, password: answers.databasepassword, os: answers.os });

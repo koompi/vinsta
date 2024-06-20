@@ -1,5 +1,5 @@
 import mongoose from 'mongoose';
-import { serverSchema } from "../cmd/models/serverSchema";
+import { serverSchema } from "../../../models/serverSchema";
 import dotenv from 'dotenv';
 import * as path from 'path';
 

@@ -30,36 +30,9 @@ network:
         // Write the Netplan configuration to /etc/netplan/01-kvmbridge.yaml
         await fs.writeFile('/etc/netplan/01-kvmbridge.yaml', netplanConfig);
         console.log('Netplan configuration file created successfully.');
-
-        // Temporarily apply the Netplan configuration
-        exec('netplan try', (error, stdout, stderr) => {
-            if (error) {
-                console.error(`Error applying netplan configuration: ${error.message}`);
-                // Restore the original configuration in case of error
-                exec('netplan apply --debug');
-                return;
-            }
-            if (stderr) {
-                console.error(`Netplan try stderr: ${stderr}`);
-                // Restore the original configuration in case of error
-                exec('netplan apply --debug');
-                return;
-            }
-            console.log(`Netplan try stdout: ${stdout}`);
-
-            // If the temporary apply was successful, commit the changes
-            exec('netplan apply', (applyError, applyStdout, applyStderr) => {
-                if (applyError) {
-                    console.error(`Error applying netplan configuration: ${applyError.message}`);
-                    return;
-                }
-                if (applyStderr) {
-                    console.error(`Netplan apply stderr: ${applyStderr}`);
-                    return;
-                }
-                console.log(`Netplan apply stdout: ${applyStdout}`);
-            });
-        });
+        await executeCommand('sudo netplan apply');
+       
+    
     } catch (error: any) {
         console.error(`Failed to setup host bridge: ${error.message}`);
     }

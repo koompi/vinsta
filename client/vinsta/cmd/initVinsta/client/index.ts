@@ -2,8 +2,8 @@ import inquirer from "inquirer";
 import mongoose from "mongoose";
 import bcrypt from "bcrypt";
 import { writeClientEnvFile } from "../../../shells/writeEnvFile";
-import { userSchema } from "../../models/userSchema";
-import { serverSchema } from "../../models/serverSchema";
+import { userSchema } from "../../../../../models/userSchema";
+import { serverSchema } from "../../../../../models/serverSchema";
 
 // Model for User Account
 const User = mongoose.model("User", userSchema);

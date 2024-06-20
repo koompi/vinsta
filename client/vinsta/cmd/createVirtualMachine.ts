@@ -2,6 +2,11 @@ import inquirer from "inquirer";
 import axios from "axios";
 import ora from "ora"; // Import ora library
 import { retrieveServer } from "../utils/retrieveServer";
+import { connectDB } from '../../../shells/connectDB';
+import VMOptionsModel from '../../../models/vmOptionsSchema';
+import bcrypt from 'bcrypt';
+import mongoose from "mongoose";
+
 
 export async function createVirtualMachine() {
   const serverChoices = await retrieveServer();
@@ -66,6 +71,18 @@ export async function createVirtualMachine() {
       message: "Enter the architecture of the virtual machine:",
       default: "x64",
     },
+    {
+      type: "input",
+      name: "username",
+      message: "Enter username of the virtual machine:",
+      default: "admin",
+    },
+    {
+      type: "password",
+      name: "password",
+      message: "Enter password of the virtual machine:",
+      mask: "*",
+    },
   ]);
   const spinner = ora("Creating virtual machine... Please wait. This process may take up to 1 minute.").start(); // Create spinner instance
 
@@ -83,6 +100,33 @@ export async function createVirtualMachine() {
     if (response.data.message === "VM created successfully") {
       spinner.succeed("Virtual machine created successfully"); // Stop spinner on success
       console.log(response.data);
+      
+    // // Connect DB and insert data
+    await connectDB();
+
+    // Hash the master key
+    const hashedPassword = await bcrypt.hash(answers.password, 10);
+
+    // Create VM options document
+    const vmOptions = new VMOptionsModel({
+      name: answers.name,
+      iso: answers.iso,
+      ram: answers.ram,
+      disk: answers.disk,
+      cpu: answers.cpu,
+      network: answers.network,
+      osVariant: answers.osVariant,
+      bootOption: answers.bootOption,
+      arch: answers.arch,
+      username: answers.username,
+      password: hashedPassword,
+    });
+
+    // Save VM options to MongoDB
+    await vmOptions.save();
+    console.log('Successfully insert the vm data into database collection');
+    mongoose.disconnect();
+
     } else {
       spinner.fail("Failed to create virtual machine"); // Stop spinner on error
       console.error("Server response:", response.data);
