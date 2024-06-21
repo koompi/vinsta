@@ -6,6 +6,7 @@ export * from "./startVirtualMachine";
 export * from "./removeVirtualMachine";
 export * from "./checkinfoVirtualMachine";
 export * from "./listallVirtualMachine";
+export * from "./statusVM";
 export * from "./initVinsta/";
 export * from "./sshVirtualMachine";
 export * from "./updateVinsta";
