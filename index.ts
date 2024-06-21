@@ -34,7 +34,7 @@ const connectDB = async () => {
   }
 };
 
-connectDB();
+// connectDB();
 
 app.use(express.static(__dirname + '/public'));
 app.use("/api", vmRoutes);

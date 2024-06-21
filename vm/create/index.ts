@@ -14,7 +14,7 @@ interface VMCreationResponse {
 // Function to create virtual machine
 export const createVirtualMachine = async (
   options: VMOptions
-): Promise<{ sshcmd?: string; sshUsername?: string; sshPassword?: string }> => {
+): Promise<{ ipAddr: string; sshcmd?: string; sshUsername?: string; sshPassword?: string }> => {
   const {
     name,
     iso = 'koompi',
@@ -96,6 +96,7 @@ export const createVirtualMachine = async (
 
     // Return an object containing success message, IP address (if found), and SSH command (if applicable)
     return {
+      ipAddr: ipAddress || 'undefined',
       sshcmd: sshCommand,
       sshUsername: 'koompilive',
       sshPassword: '123',

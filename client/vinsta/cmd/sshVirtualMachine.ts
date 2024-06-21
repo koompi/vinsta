@@ -1,9 +1,21 @@
 import inquirer from "inquirer";
 import { getServerConfig } from "../utils/config";
-import ora from "ora";
 import axios from "axios";
 import { spawn } from "child_process";
 import type { SpawnOptions } from "child_process";
+import { sendOTP } from "../utils/verification/telegram/sendOTP";
+import { verifyOTP } from "../utils/verification/telegram/verifyOTP";
+import mongoose from "mongoose";
+import { userSchema } from "../../../models/userSchema";
+import VMOptionsModel from '../../../models/vmOptionsSchema';
+import { connectDB } from "../../../shells/connectDB";
+import promptSync from 'prompt-sync';
+import ora from 'ora';
+
+
+const User = mongoose.model("User", userSchema);
+
+const prompt = promptSync();
 
 export async function sshVirtualMachine() {
   try {
@@ -17,58 +29,80 @@ export async function sshVirtualMachine() {
       {
         type: "input",
         name: "username",
-        message: "Enter the username of the virtual machine:",
-        default: "admin",
-      },
-      {
-        type: "password",
-        name: "password",
-        message: "Enter the password of the virtual machine:",
-        default: "123",
-        mask: '*'
+        message: "Enter your account username:",
+        default: "jiren",
       },
     ]);
 
-    const spinner = ora("Sending request...").start();
+    const spinner = createSpinner("Connecting to database...\n ");
 
     const serverConfig = getServerConfig();
     if (!serverConfig) {
       throw new Error("Failed to load server configuration.");
     }
 
-    const { host, port } = serverConfig;
-    const url = `http://${host}:${port}/api/checkinfo`;
+    await connectDB();
 
-    const response = await axios.post(url, { name: answers.name }, {
-      headers: { "Content-Type": "application/json" }
+    // Retrieve VM details
+    const vmDetails = await VMOptionsModel.findOne({ name: answers.name });
+    if (!vmDetails) {
+      spinner.fail("Virtual machine not found.");
+      mongoose.disconnect();
+      return;
+    }
+
+    // Retrieve User details
+    const userDetails = await User.findOne({ username: answers.username });
+    if (!userDetails) {
+      spinner.fail("User not found.");
+      mongoose.disconnect(); 
+      return;
+    }
+
+    const chatId = userDetails.telegramChatID;
+    if (!chatId) {
+      spinner.fail("User does not have a Telegram chat ID.");
+      mongoose.disconnect();
+      return;
+    }
+
+    // Send OTP
+    const otp = await sendOTP(chatId);
+
+    // Prompt user to enter the OTP
+    const userOtp = prompt('Enter the OTP you received: ');
+
+    // Verify OTP
+    const isValid = verifyOTP(chatId, userOtp);
+    if (!isValid) {
+      spinner.fail("Invalid OTP.");
+      mongoose.disconnect();
+      return;
+    }
+
+    // Form SSH command
+    const { username, ipaddr, password } = vmDetails;
+    const sshCommand = `sshpass -p '${password}' ssh ${username}@${ipaddr}`;
+
+    // Start SSH process
+    const options: SpawnOptions = {
+      shell: true,
+      stdio: "inherit",
+    };
+
+    const sshProcess = spawn(sshCommand, [], options);
+    spinner.succeed("Successfully connected to VM");
+
+    sshProcess.on('close', (code) => {
+      if (code !== 0) {
+        spinner.fail("Failed to connect to VM");
+      }
+      mongoose.disconnect();
+      process.exit(); // Stop the CLI tool
     });
 
-    if (response.data.message === "Checking info of the virtual machine") {
-      spinner.succeed("Got IP Address of the domain");
-
-      const ipAddress = response.data.vm.vmInfo.ipAddress;
-      const sshCommand = `sshpass -p '${answers.password}' ssh ${answers.username}@${ipAddress}`;
-
-      const options: SpawnOptions = {
-        shell: true,
-        stdio: "inherit",
-      };
-
-      const sshProcess = spawn(sshCommand, [], options);
-      sshProcess.on('close', (code) => {
-        if (code === 0) {
-          spinner.succeed("Successfully connected to VM");
-          process.exit(); // Stop the CLI tool
-        } else {
-          spinner.fail("Failed to connect to VM");
-        }
-      });
-    } else {
-      spinner.fail("Failed to ssh into virtual machine");
-      console.error("Server response:", response.data);
-    }
   } catch (error: any) {
-    ora().fail("An error occurred");
+    createSpinner().fail("An error occurred");
     if (error.response) {
       console.error("Server responded with an error:", error.response.status, error.response.data);
     } else if (error.request) {
@@ -76,5 +110,10 @@ export async function sshVirtualMachine() {
     } else {
       console.error("Error:", error.message);
     }
+    mongoose.disconnect();
   }
+}
+
+function createSpinner(text: string = "") {
+  return ora(text).start();
 }

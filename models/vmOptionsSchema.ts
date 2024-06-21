@@ -12,6 +12,7 @@ export interface VMOptionsDocument extends Document {
   arch: string;
   username: string;
   password: string;
+  ipaddr: string;
 }
 
 const vmOptionsSchema: Schema<VMOptionsDocument> = new Schema({
@@ -26,6 +27,7 @@ const vmOptionsSchema: Schema<VMOptionsDocument> = new Schema({
   arch: { type: String, default: 'x64' },
   username: { type: String, default: 'admin' },
   password: { type: String, default: '123' },
+  ipaddr: { type: String, required: true },
 }, { timestamps: true });
 
 export default mongoose.model<VMOptionsDocument>('vms', vmOptionsSchema);

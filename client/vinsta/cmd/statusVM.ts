@@ -15,7 +15,7 @@ export async function statusALLVirtualMachine() {
       {
         type: "list",
         name: "selectedServer",
-        message: "Select a Vinsta server to list all virtual machines:",
+        message: "Select a Vinsta server to list all status of virtual machines:",
         choices: serverChoices,
       },
     ]);

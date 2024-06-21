@@ -2,20 +2,20 @@ import express from 'express';
 import {
   createVM,
   removeVM,
-  listAllVM,
   stopVM,
   startVM,
   cloneVM,
   checkInfoVM,
   backupVM,
   restoreVM,
+  statusAllVM,
 } from './api/index';
 
 const router = express.Router();
 
 
 
-router.get('/listall', listAllVM);
+router.get('/status', statusAllVM);
 router.post('/create', createVM);
 router.post('/remove', removeVM);
 router.post('/start', startVM);

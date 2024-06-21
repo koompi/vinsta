@@ -114,7 +114,7 @@ export async function createVirtualMachine() {
       console.log(response.data);
 
       // Hash the master key
-      const hashedPassword = await bcrypt.hash(answers.password, 10);
+      // const hashedPassword = await bcrypt.hash(answers.password, 10);
 
       // Create VM options document
       const vmOptions = new VMOptionsModel({
@@ -128,7 +128,8 @@ export async function createVirtualMachine() {
         bootOption: answers.bootOption,
         arch: answers.arch,
         username: answers.username,
-        password: hashedPassword,
+        // password: hashedPassword,
+        password: answers.password,
         ipaddr: response.data.vm.ipAddr, 
       });
 

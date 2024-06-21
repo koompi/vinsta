@@ -28,7 +28,8 @@ program
   .option("-k, --check", "check information of a virtual machine")
   .option("-l, --listall", "list all of the available virtual machine")
   .option("  , --status", "list status of all of the available virtual machine")
-  .option("-u, --update", "Update Vinsta to the latest version")
+  .option("  , --ssh", "ssh into virtual machine")
+  .option("-u, --update", "update Vinsta to the latest version")
   .parse(process.argv);
 
 const options = program.opts();
@@ -109,5 +110,8 @@ if (process.argv.length <= 2) {
   }
   if (options.restore) {
     restoreVirtualMachine();
+  }
+  if (options.ssh) {
+    sshVirtualMachine();
   }
 }
