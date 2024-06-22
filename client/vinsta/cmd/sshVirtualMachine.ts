@@ -1,5 +1,4 @@
 import inquirer from "inquirer";
-import { getServerConfig } from "../utils/config";
 import axios from "axios";
 import { spawn } from "child_process";
 import type { SpawnOptions } from "child_process";
@@ -7,14 +6,12 @@ import { sendOTP } from "../utils/verification/telegram/sendOTP";
 import { verifyOTP } from "../utils/verification/telegram/verifyOTP";
 import mongoose from "mongoose";
 import { userSchema } from "../../../models/userSchema";
-import VMOptionsModel from '../../../models/vmOptionsSchema';
+import VMOptionsModel from "../../../models/vmOptionsSchema";
 import { connectDB } from "../../../shells/connectDB";
-import promptSync from 'prompt-sync';
-import ora from 'ora';
-
+import promptSync from "prompt-sync";
+import ora from "ora";
 
 const User = mongoose.model("User", userSchema);
-
 const prompt = promptSync();
 
 export async function sshVirtualMachine() {
@@ -34,12 +31,7 @@ export async function sshVirtualMachine() {
       },
     ]);
 
-    const spinner = createSpinner("Connecting to database...\n ");
-
-    const serverConfig = getServerConfig();
-    if (!serverConfig) {
-      throw new Error("Failed to load server configuration.");
-    }
+    const spinner = createSpinner("Connecting to database...\n");
 
     await connectDB();
 
@@ -55,7 +47,7 @@ export async function sshVirtualMachine() {
     const userDetails = await User.findOne({ username: answers.username });
     if (!userDetails) {
       spinner.fail("User not found.");
-      mongoose.disconnect(); 
+      mongoose.disconnect();
       return;
     }
 
@@ -67,20 +59,20 @@ export async function sshVirtualMachine() {
     }
 
     // Send OTP
-    const otp = await sendOTP(chatId);
+    await sendOTP(chatId);
 
     // Prompt user to enter the OTP
-    const userOtp = prompt('Enter the OTP you received: ');
+    const userOtp = prompt("Enter the OTP you received: ");
 
     // Verify OTP
-    const isValid = verifyOTP(chatId, userOtp);
+    const isValid = await verifyOTP(chatId, userOtp);
     if (!isValid) {
       spinner.fail("Invalid OTP.");
       mongoose.disconnect();
       return;
     }
 
-    // Form SSH command
+    // // Form SSH command
     const { username, ipaddr, password } = vmDetails;
     const sshCommand = `sshpass -p '${password}' ssh ${username}@${ipaddr}`;
 
@@ -93,14 +85,13 @@ export async function sshVirtualMachine() {
     const sshProcess = spawn(sshCommand, [], options);
     spinner.succeed("Successfully connected to VM");
 
-    sshProcess.on('close', (code) => {
+    sshProcess.on("close", (code) => {
       if (code !== 0) {
         spinner.fail("Failed to connect to VM");
       }
       mongoose.disconnect();
       process.exit(); // Stop the CLI tool
     });
-
   } catch (error: any) {
     createSpinner().fail("An error occurred");
     if (error.response) {

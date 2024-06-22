@@ -1,41 +1,33 @@
 import axios from 'axios';
 
-const botToken = '7339995010:AAGKK95yHIzzqDXRgyPQwX0FwQf9iG6azo8'; // Replace with your Telegram bot token
-const otpStorage: Record<string, string> = {}; // Temporary storage for OTPs
-
-// Function to generate a random 6-digit OTP
-function generateOTP(): string {
-  return Math.floor(100000 + Math.random() * 900000).toString();
-}
-
-// Function to send OTP to the specified chat_id
-export async function sendOTP(chatId: string): Promise<void> {
-  const otp = generateOTP();
-  const message = `Your OTP is: ${otp}`;
-
-  // Store the OTP with chatId as the key
-  otpStorage[chatId] = otp;
-
-  const apiUrl = `https://api.telegram.org/bot${botToken}/sendMessage`;
-
+export const sendOTP = async (chatId: string): Promise<void> => {
   try {
-    const response = await axios.post(apiUrl, {
-      chat_id: chatId,
-      text: message,
+    const response = await axios.post('https://vinsta.koompi.org/send_otp', {
+      chatId,
     });
-
-    if (response.data.ok) {
-    //   console.log(`OTP sent successfully to chat ID: ${chatId}`);
-    } else {
-      console.error('Failed to send OTP:', response.data);
-    }
+    console.log('OTP sent successfully:', response.data);
   } catch (error) {
-    console.error('Error sending OTP:', error);
+    if (axios.isAxiosError(error)) {
+      console.error('Error sending OTP:', error.response?.data || error.message);
+    } else {
+      console.error('Unexpected error:', error);
+    }
   }
-}
+};
 
-// // Example usage
-// const chatId = '670967877'; // Replace with the chat_id you got from /get_chatid
-// sendOTP(chatId);
+export const verifyOTP = async (chatId: string, otp: string): Promise<void> => {
+  try {
+    const response = await axios.post('https://vinsta.koompi.org/verify_otp', {
+      chatId,
+      otp,
+    });
+    console.log('OTP verification response:', response.data);
+  } catch (error) {
+    if (axios.isAxiosError(error)) {
+      console.error('Error verifying OTP:', error.response?.data || error.message);
+    } else {
+      console.error('Unexpected error:', error);
+    }
+  }
+};
 
-export { otpStorage };

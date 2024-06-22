@@ -1,19 +1,21 @@
-import { otpStorage } from './sendOTP';
+import axios from 'axios';
+import dotenv from 'dotenv';
 
-// Function to verify OTP
-export function verifyOTP(chatId: string, otp: string): boolean {
-  const storedOtp = otpStorage[chatId];
 
-  if (storedOtp === otp) {
-    // OTP is valid, remove it from storage
-    delete otpStorage[chatId];
-    return true;
+export const verifyOTP = async (chatId: string, otp: string): Promise<boolean> => {
+  try {
+    const response = await axios.post("https://vinsta.koompi.org/verify_otp", {
+      chatId,
+      otp,
+    });
+    console.log('OTP verification response:', response.data);
+    return response.data.valid; // Assuming the API returns a boolean field 'valid' indicating the OTP validity
+  } catch (error) {
+    if (axios.isAxiosError(error)) {
+      console.error('Error verifying OTP:', error.response?.data || error.message);
+    } else {
+      console.error('Unexpected error:', error);
+    }
+    return false;
   }
-
-  // OTP is invalid
-  return false;
-}
-
-// // Example usage
-// const isValid = verifyOTP(chatId, '123456'); // Replace '123456' with the OTP to be verified
-// console.log(`Is the OTP valid? ${isValid}`);
+};
