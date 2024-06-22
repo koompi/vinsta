@@ -1,11 +1,12 @@
 import inquirer from "inquirer";
 import mongoose from "mongoose";
 import bcrypt from "bcrypt";
+import crypto from "crypto";
 import { writeClientEnvFile } from "../../../shells/writeEnvFile";
 import { userSchema } from "../../../../../models/userSchema";
 import { serverSchema } from "../../../../../models/serverSchema";
 import { sshConfig } from "../../../shells/sshConfig";
-// Model for User Account
+
 const User = mongoose.model("User", userSchema);
 const Server = mongoose.model("Server", serverSchema);
 
@@ -34,6 +35,12 @@ export async function initializeClient() {
       default: "85515780491",
     },
     {
+      type: "password",
+      name: "password",
+      message: "Enter your encryption password:",
+      mask: "*", // Mask input for security
+    },
+    {
       type: "input",
       name: "databaseip",
       message: "Enter the IP Address of the MongoDB:",
@@ -46,10 +53,10 @@ export async function initializeClient() {
       default: "27016",
     },
     {
-      type: "input",
+      type: "password",
       name: "databasepassword",
       message: "Enter the Password of the MongoDB:",
-      default: "zxcvahsdkjfqwer",
+      mask: "*",
     },
     {
       type: "password",
@@ -59,8 +66,9 @@ export async function initializeClient() {
     },
   ]);
 
-  // Init ssh config
+  // Initialize SSH configuration
   await sshConfig();
+
   try {
     // Connect to MongoDB
     await mongoose.connect(
@@ -69,7 +77,6 @@ export async function initializeClient() {
 
     // Retrieve server details from MongoDB
     const serverDetails = await Server.findOne({});
-
     if (!serverDetails) {
       console.error("Server details not found in MongoDB.");
       mongoose.disconnect();
@@ -77,37 +84,50 @@ export async function initializeClient() {
     }
 
     // Compare provided master key with stored hashed key
-    const isMatch = await bcrypt.compare(
-      answers.masterkey,
-      serverDetails.masterKey || ""
-    );
+    const isMatch = await bcrypt.compare(answers.masterkey, serverDetails.masterkey || "");
     if (!isMatch) {
       console.error("Invalid master key.");
       mongoose.disconnect();
       return;
     }
 
+    // Derive encryption key from user password using PBKDF2
+    const salt = crypto.randomBytes(16).toString("hex");
+    const key = crypto.pbkdf2Sync(answers.password, salt, 100000, 32, "sha512");
+    const iv = crypto.randomBytes(16).toString("hex");
+
+    // Encrypt master key with derived encryption key
+    const cipher = crypto.createCipheriv("aes-256-cbc", key, Buffer.from(iv, "hex"));
+    let encryptedMasterkey = cipher.update(answers.masterkey, "utf8", "hex");
+    encryptedMasterkey += cipher.final("hex");
+
+    // Store the salt and IV along with the encrypted master key
+    const encryptedData = `${salt}:${iv}:${encryptedMasterkey}`;
+
     // Proceed with account creation or login
-    console.log("Master key verified. Creating account or logging in...");
+    console.log("Master key encrypted with user password. Creating account or logging in...");
 
     // Check if the user already exists
-    let user = await User.findOne({ name: answers.username });
+    let user = await User.findOne({ username: answers.username });
 
     if (!user) {
       // Create a new user account if it doesn't exist
       user = new User({
         username: answers.username,
         number: answers.number,
-        telegramChatID: answers.chatid, 
+        password: await bcrypt.hash(answers.password, 10), // Hash the user's password
+        masterkey: encryptedData,
+        telegramChatID: answers.chatid,
+        encryptionInfo: { salt, iv }, // Store salt and iv in encryptionInfo
       });
 
       await user.save();
-      console.log(`New account created for ${answers.name}`);
+      console.log(`New account created for ${answers.username}`);
 
       // Write to .env file
       writeClientEnvFile(answers.databaseip, answers.databaseport, answers.databasepassword);
     } else {
-      console.log(`Username already existed: ${answers.name}`);
+      console.log(`Username already exists: ${answers.username}`);
     }
 
     mongoose.disconnect(); // Disconnect from MongoDB

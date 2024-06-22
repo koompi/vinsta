@@ -115,7 +115,7 @@ export async function initializeServer() {
             name: answers.name,
             ip: answers.ip,
             port: answers.port,
-            masterKey: hashedKey,
+            masterkey: hashedKey,
         });
 
         await newServer.save();

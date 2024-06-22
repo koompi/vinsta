@@ -1,7 +1,7 @@
 import { executeCommand } from '../../shells/executeCommand';
 import { getIpAddressFromMac } from '../../client/vinsta/shells/getIpAddressFromMac';
 
-import  type { VMOptions } from '../../types/VMOptionsType';
+import type { VMOptions } from '../../types/VMOptionsType';
 
 
 
@@ -25,8 +25,8 @@ export const createVirtualMachine = async (
     osVariant = 'archlinux',
     bootOption = 'uefi',
     arch = 'x64',
-    username = 'admin',
-    password = '123',
+    vmusername = 'admin',
+    vmpassword = '123',
   } = options;
 
   try {

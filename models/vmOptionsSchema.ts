@@ -10,8 +10,8 @@ export interface VMOptionsDocument extends Document {
   osVariant: string;
   bootOption: string;
   arch: string;
-  username: string;
-  password: string;
+  vmusername: string;
+  vmpassword: string;
   ipaddr: string;
 }
 
@@ -25,8 +25,8 @@ const vmOptionsSchema: Schema<VMOptionsDocument> = new Schema({
   osVariant: { type: String, default: 'archlinux' },
   bootOption: { type: String, default: 'uefi' },
   arch: { type: String, default: 'x64' },
-  username: { type: String, default: 'admin' },
-  password: { type: String, default: '123' },
+  vmusername: { type: String, default: 'admin' },
+  vmpassword: { type: String, default: '123' },
   ipaddr: { type: String, required: true },
 }, { timestamps: true });
 

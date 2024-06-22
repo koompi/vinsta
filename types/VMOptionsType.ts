@@ -8,7 +8,7 @@ export type VMOptions = {
     osVariant?: string;
     bootOption?: 'mbr' | 'uefi';
     arch?: 'x64' | 'x86';  // Add an architecture option
-    username?: string;
-    password?: string;
+    vmusername?: string;
+    vmpassword?: string;
   }
   

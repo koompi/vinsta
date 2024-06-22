@@ -1,41 +1,63 @@
-import inquirer from "inquirer";
-import axios from "axios";
-import { spawn } from "child_process";
-import type { SpawnOptions } from "child_process";
-import { sendOTP } from "../utils/verification/telegram/sendOTP";
-import { verifyOTP } from "../utils/verification/telegram/verifyOTP";
 import mongoose from "mongoose";
-import { userSchema } from "../../../models/userSchema";
+import type { SpawnOptions } from "child_process";
+import { spawn } from "child_process"
+import ora from "ora";
+import inquirer from "inquirer";
+import crypto from "crypto";
+import bcrypt from "bcrypt";
+
 import VMOptionsModel from "../../../models/vmOptionsSchema";
 import { connectDB } from "../../../shells/connectDB";
-import promptSync from "prompt-sync";
-import ora from "ora";
-
-const User = mongoose.model("User", userSchema);
-const prompt = promptSync();
+import { userSchema } from "../../../models/userSchema"; // Assuming userSchema is defined here
 
 export async function sshVirtualMachine() {
   try {
     const answers = await inquirer.prompt([
       {
         type: "input",
-        name: "name",
-        message: "Enter the name of the virtual machine:",
-        default: "koompi-vm-1",
-      },
-      {
-        type: "input",
         name: "username",
         message: "Enter your account username:",
         default: "jiren",
       },
+      {
+        type: "password",
+        name: "password",
+        message: "Enter your account password:",
+        mask: "*",
+      },
+      {
+        type: "input",
+        name: "name",
+        message: "Enter the name of the virtual machine:",
+        default: "koompi-vm-1",
+      },
     ]);
 
-    const spinner = createSpinner("Connecting to database...\n");
+    const spinner = ora("Connecting to database...").start();
 
+    // Connect to MongoDB
     await connectDB();
 
-    // Retrieve VM details
+    // Retrieve user details to get the encryption information
+    const User = mongoose.model("User", userSchema);
+    const user = await User.findOne({ username: answers.username });
+
+    if (!user) {
+      spinner.fail(`User "${answers.username}" not found.`);
+      mongoose.disconnect();
+      return;
+    }
+
+    // Authenticate user
+    const isPasswordValid = await bcrypt.compare(answers.password, user.password || '');
+    if (!isPasswordValid) {
+      spinner.fail("Invalid account password.");
+      mongoose.disconnect();
+      return;
+    }
+
+  
+
     const vmDetails = await VMOptionsModel.findOne({ name: answers.name });
     if (!vmDetails) {
       spinner.fail("Virtual machine not found.");
@@ -43,40 +65,17 @@ export async function sshVirtualMachine() {
       return;
     }
 
-    // Retrieve User details
-    const userDetails = await User.findOne({ username: answers.username });
-    if (!userDetails) {
-      spinner.fail("User not found.");
+    // Decrypt vmpassword from vmDetails using user's login password
+    const vmpassword = decryptVMPassword(vmDetails.vmpassword, answers.password);
+    if (!vmpassword) {
+      spinner.fail("Failed to decrypt VM password.");
       mongoose.disconnect();
       return;
     }
 
-    const chatId = userDetails.telegramChatID;
-    if (!chatId) {
-      spinner.fail("User does not have a Telegram chat ID.");
-      mongoose.disconnect();
-      return;
-    }
+    const { vmusername, ipaddr } = vmDetails;
+    const sshCommand = `sshpass -p '${vmpassword}' ssh ${vmusername}@${ipaddr}`;
 
-    // Send OTP
-    await sendOTP(chatId);
-
-    // Prompt user to enter the OTP
-    const userOtp = prompt("Enter the OTP you received: ");
-
-    // Verify OTP
-    const isValid = await verifyOTP(chatId, userOtp);
-    if (!isValid) {
-      spinner.fail("Invalid OTP.");
-      mongoose.disconnect();
-      return;
-    }
-
-    // // Form SSH command
-    const { username, ipaddr, password } = vmDetails;
-    const sshCommand = `sshpass -p '${password}' ssh ${username}@${ipaddr}`;
-
-    // Start SSH process
     const options: SpawnOptions = {
       shell: true,
       stdio: "inherit",
@@ -93,18 +92,21 @@ export async function sshVirtualMachine() {
       process.exit(); // Stop the CLI tool
     });
   } catch (error: any) {
-    createSpinner().fail("An error occurred");
-    if (error.response) {
-      console.error("Server responded with an error:", error.response.status, error.response.data);
-    } else if (error.request) {
-      console.error("No response received from the server:", error.request);
-    } else {
-      console.error("Error:", error.message);
-    }
+    console.error("An error occurred:", error.message);
     mongoose.disconnect();
   }
 }
 
-function createSpinner(text: string = "") {
-  return ora(text).start();
+function decryptVMPassword(encryptedPassword: string, userPassword: string): string | null {
+  try {
+    const [salt, iv, encryptedMasterkey] = encryptedPassword.split(':');
+    const key = crypto.pbkdf2Sync(userPassword, Buffer.from(salt, "hex"), 100000, 32, "sha512");
+    const decipher = crypto.createDecipheriv("aes-256-cbc", key, Buffer.from(iv, "hex"));
+    let decrypted = decipher.update(Buffer.from(encryptedMasterkey, "hex"));
+    decrypted = Buffer.concat([decrypted, decipher.final()]);
+    return decrypted.toString("utf8");
+  } catch (error) {
+    console.error("Decryption error:", error);
+    return null;
+  }
 }
