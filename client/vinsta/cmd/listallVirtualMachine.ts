@@ -39,7 +39,7 @@ export async function listallVirtualMachine() {
 
     // Process each VM and add to the table
     vmList.forEach(vm => {
-      table.push([vm.name, vm.iso, vm.ram, vm.disk, vm.cpu, vm.network, vm.osVariant, vm.bootOption, vm.arch, vm.username, vm.ipaddr]);
+      table.push([vm.name, vm.iso, vm.ram, vm.disk, vm.cpu, vm.network, vm.osVariant, vm.bootOption, vm.arch, vm.vmusername, vm.ipaddr]);
     });
 
     spinner.succeed("Successfully listed all virtual machines");

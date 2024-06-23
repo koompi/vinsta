@@ -1,14 +1,20 @@
 import mongoose from "mongoose";
-import type { SpawnOptions } from "child_process";
-import { spawn } from "child_process"
 import ora from "ora";
 import inquirer from "inquirer";
 import crypto from "crypto";
 import bcrypt from "bcrypt";
+import axios from "axios";
+import { spawn } from "child_process"; // Correct import for SpawnOptions
+import type { SpawnOptions } from "child_process";
 
 import VMOptionsModel from "../../../models/vmOptionsSchema";
 import { connectDB } from "../../../shells/connectDB";
-import { userSchema } from "../../../models/userSchema"; // Assuming userSchema is defined here
+import { userSchema } from "../../../models/userSchema";
+import { sendOTP } from "../utils/verification/telegram/sendOTP";
+import { verifyOTP } from "../utils/verification/telegram/verifyOTP";
+
+import promptSync from 'prompt-sync';
+const prompt = promptSync();
 
 export async function sshVirtualMachine() {
   try {
@@ -56,8 +62,29 @@ export async function sshVirtualMachine() {
       return;
     }
 
-  
+    // Send OTP via Telegram bot
+    const chatId = user.telegramChatID; // Assuming you have stored chatId in your user schema
+    await sendOTP(chatId as string);
 
+    // Wait for user to input the OTP they received
+    const otpAnswer = prompt('Enter the OTP you received: ').trim(); // Ensure OTP input is trimmed
+
+    try {
+          // Verify OTP using the provided input
+    const isValidOTP = await verifyOTP(chatId as string, otpAnswer);
+console.log(isValidOTP);
+    if (isValidOTP === "Invalid OTP" ) {
+      spinner.fail("Failed to verify OTP. Access denied.");
+      mongoose.disconnect();
+      return;
+    }
+    } catch (error) {
+      spinner.fail("Failed to verify OTP. Access denied.");
+      mongoose.disconnect();
+      return;
+    }
+   
+  
     const vmDetails = await VMOptionsModel.findOne({ name: answers.name });
     if (!vmDetails) {
       spinner.fail("Virtual machine not found.");
