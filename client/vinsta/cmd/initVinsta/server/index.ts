@@ -102,9 +102,10 @@ export async function initializeServer() {
 
         await MongoDBInit({ ip: answers.databaseip, port: answers.databaseport, password: answers.databasepassword, os: answers.os });
         // Connect to MongoDB
-        await mongoose.connect(
-            `mongodb://admin:${answers.databasepassword}@${answers.databaseip}:${answers.databaseport}/admin`
-        );
+        const connectionString = `mongodb://admin:${encodeURIComponent(answers.databasepassword)}@${answers.databaseip}:${answers.databaseport}/admin`;
+
+        await mongoose.connect(connectionString, {
+        });
         console.log("MongoDB connected successfully");
 
         // Hash the master key

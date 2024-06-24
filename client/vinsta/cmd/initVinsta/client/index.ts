@@ -74,10 +74,10 @@ export async function initializeClient() {
 
   try {
     // Connect to MongoDB
-    await mongoose.connect(
-      `mongodb://admin:${answers.databasepassword}@${answers.databaseip}:${answers.databaseport}/admin`
-    );
+    const connectionString = `mongodb://admin:${encodeURIComponent(answers.databasepassword)}@${answers.databaseip}:${answers.databaseport}/admin`;
 
+    await mongoose.connect(connectionString, {
+    });
     // Retrieve server details from MongoDB
     const serverDetails = await Server.findOne({});
     if (!serverDetails) {
