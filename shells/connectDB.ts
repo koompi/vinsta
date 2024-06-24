@@ -17,7 +17,7 @@ export async function connectDB() {
   try {
     // Form the MongoDB connection string using environment variables
     const { DATABASE_IP, DATABASE_PORT, DATABASE_PASSWORD } = process.env;
-    const connectionString = `mongodb://admin:${encodeURIComponent}${DATABASE_PASSWORD}@${DATABASE_IP}:${DATABASE_PORT}/admin`;
+    const connectionString = `mongodb://admin:${encodeURIComponent(DATABASE_PASSWORD || "")}@${DATABASE_IP}:${DATABASE_PORT}/admin`;
 
     // Connect to MongoDB
     await mongoose.connect(connectionString, {

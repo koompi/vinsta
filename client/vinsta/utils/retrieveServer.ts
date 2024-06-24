@@ -16,7 +16,7 @@ export async function retrieveServer() {
     const { DATABASE_IP, DATABASE_PORT, DATABASE_PASSWORD } = process.env;
     // Connect to MongoDB
     // Connect to MongoDB
-    const connectionString = `mongodb://admin:${encodeURIComponent}${DATABASE_PASSWORD}@${DATABASE_IP}:${DATABASE_PORT}/admin`;
+    const connectionString = `mongodb://admin:${encodeURIComponent(DATABASE_PASSWORD || "")}@${DATABASE_IP}:${DATABASE_PORT}/admin`;
 
     await mongoose.connect(connectionString, {
     });
