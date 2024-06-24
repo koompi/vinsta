@@ -26,6 +26,7 @@ setup_vinsta_cli() {
   cd /opt/vinsta/client/vinsta
   bun install
   make install
+  sudo bun install -g punycode
 }
 
 # Function to install required packages on Arch Linux
