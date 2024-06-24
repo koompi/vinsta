@@ -16,4 +16,5 @@ services:
       - ./database:/data/db
       - ./mongo-init.js:/docker-entrypoint-initdb.d/mongo-init.js:ro
     ports:
-      - ${db_port}:27017
+      - ${db_port}:${db_port}
+    command: mongod --port ${db_port}
