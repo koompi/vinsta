@@ -5,7 +5,7 @@ export const sendOTP = async (chatId: string): Promise<void> => {
     const response = await axios.post('https://vinsta.koompi.org/send_otp', {
       chatId,
     });
-    console.log('OTP sent successfully:', response.data);
+    // console.log('OTP sent successfully:', response.data);
   } catch (error) {
     if (axios.isAxiosError(error)) {
       console.error('Error sending OTP:', error.response?.data || error.message);

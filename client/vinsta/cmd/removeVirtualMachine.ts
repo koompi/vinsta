@@ -56,7 +56,7 @@ export async function removeVirtualMachine() {
 
       // Disconnect from MongoDB
       await mongoose.disconnect();
-      console.log('Disconnected from MongoDB');
+      // console.log('Disconnected from MongoDB');
       
     } else {
       spinner.fail("Failed to remove virtual machine"); // Stop spinner on error

@@ -16,7 +16,7 @@ export async function retrieveServer() {
     const { DATABASE_IP, DATABASE_PORT, DATABASE_PASSWORD } = process.env;
     // Connect to MongoDB
     await mongoose.connect(`mongodb://admin:${DATABASE_PASSWORD}@${DATABASE_IP}:${DATABASE_PORT}/admin`);
-    console.log("MongoDB connected successfully");
+    // console.log("MongoDB connected successfully");
 
     // Retrieve all servers from the database
     const servers = await Server.find({});

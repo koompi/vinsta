@@ -10,7 +10,9 @@ import { sshConfig } from "../../../shells/sshConfig";
 const User = mongoose.model("User", userSchema);
 const Server = mongoose.model("Server", serverSchema);
 
+
 export async function initializeClient() {
+
   console.log("Please interact with the Telegram bot to get your chat ID first.");
   console.log("Click on this link to go to your Telegram bot: https://t.me/koompivinstabot");
   console.log("Type /get_chatid in the chat to get your chat ID, then come back here.");
@@ -21,6 +23,12 @@ export async function initializeClient() {
       name: "username",
       message: "Create your own nickname:",
       default: "jiren",
+    },
+    {
+      type: "password",
+      name: "password",
+      message: "Enter your encryption password:",
+      mask: "*", // Mask input for security
     },
     {
       type: "input",
@@ -34,12 +42,7 @@ export async function initializeClient() {
       message: "Enter your mobile phone number:",
       default: "85515780491",
     },
-    {
-      type: "password",
-      name: "password",
-      message: "Enter your encryption password:",
-      mask: "*", // Mask input for security
-    },
+
     {
       type: "input",
       name: "databaseip",

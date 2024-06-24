@@ -1,12 +1,10 @@
 import mongoose from "mongoose";
 import ora from "ora";
 import inquirer from "inquirer";
-import crypto from "crypto";
 import bcrypt from "bcrypt";
-import axios from "axios";
 import { spawn } from "child_process"; // Correct import for SpawnOptions
 import type { SpawnOptions } from "child_process";
-
+import { decryptVMPassword } from "../utils/decryption";
 import VMOptionsModel from "../../../models/vmOptionsSchema";
 import { connectDB } from "../../../shells/connectDB";
 import { userSchema } from "../../../models/userSchema";
@@ -39,7 +37,7 @@ export async function sshVirtualMachine() {
       },
     ]);
 
-    const spinner = ora("Connecting to database...").start();
+    const spinner = ora("Authorizing user... \n").start();
 
     // Connect to MongoDB
     await connectDB();
@@ -70,21 +68,20 @@ export async function sshVirtualMachine() {
     const otpAnswer = prompt('Enter the OTP you received: ').trim(); // Ensure OTP input is trimmed
 
     try {
-          // Verify OTP using the provided input
-    const isValidOTP = await verifyOTP(chatId as string, otpAnswer);
-console.log(isValidOTP);
-    if (isValidOTP === "Invalid OTP" ) {
-      spinner.fail("Failed to verify OTP. Access denied.");
-      mongoose.disconnect();
-      return;
-    }
+      // Verify OTP using the provided input
+      const isValidOTP = await verifyOTP(chatId as string, otpAnswer);
+      if (isValidOTP === "Invalid OTP") {
+        spinner.fail("Failed to verify OTP. Access denied.");
+        mongoose.disconnect();
+        return;
+      }
     } catch (error) {
       spinner.fail("Failed to verify OTP. Access denied.");
       mongoose.disconnect();
       return;
     }
-   
-  
+
+
     const vmDetails = await VMOptionsModel.findOne({ name: answers.name });
     if (!vmDetails) {
       spinner.fail("Virtual machine not found.");
@@ -109,7 +106,7 @@ console.log(isValidOTP);
     };
 
     const sshProcess = spawn(sshCommand, [], options);
-    spinner.succeed("Successfully connected to VM");
+    spinner.succeed("Authorized... \n Now ready to SSH into the VM");
 
     sshProcess.on("close", (code) => {
       if (code !== 0) {
@@ -124,16 +121,3 @@ console.log(isValidOTP);
   }
 }
 
-function decryptVMPassword(encryptedPassword: string, userPassword: string): string | null {
-  try {
-    const [salt, iv, encryptedMasterkey] = encryptedPassword.split(':');
-    const key = crypto.pbkdf2Sync(userPassword, Buffer.from(salt, "hex"), 100000, 32, "sha512");
-    const decipher = crypto.createDecipheriv("aes-256-cbc", key, Buffer.from(iv, "hex"));
-    let decrypted = decipher.update(Buffer.from(encryptedMasterkey, "hex"));
-    decrypted = Buffer.concat([decrypted, decipher.final()]);
-    return decrypted.toString("utf8");
-  } catch (error) {
-    console.error("Decryption error:", error);
-    return null;
-  }
-}

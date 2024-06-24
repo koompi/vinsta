@@ -2,8 +2,21 @@ import inquirer from "inquirer";
 import ora from 'ora';
 import { getServerConfig } from "../utils/config";
 import axios from "axios";
+import { retrieveServer } from "../utils/retrieveServer";
 
 export async function stopVirtualMachine() {
+  const serverChoices = await retrieveServer();
+
+  // Prompt user to select a server
+  const { selectedServer } = await inquirer.prompt([
+    {
+      type: "list",
+      name: "selectedServer",
+      message: "Select a Vinsta server to list all virtual machines:",
+      choices: serverChoices,
+    },
+  ]);
+
   const answers = await inquirer.prompt([
     {
       type: "input",
@@ -13,15 +26,9 @@ export async function stopVirtualMachine() {
     },
   ]);
   const spinner = ora("Sending request...").start(); // Start spinner instance
-  
-  // Read environment variables from $HOME/.vinsta/env
-  const serverConfig = getServerConfig();
-  if (!serverConfig) {
-    return;
-  }
 
-  const { host, port } = serverConfig;
-  const url = `http://${host}:${port}/api/stop`;
+  const { ip, port } = selectedServer;
+  const url = `http://${ip}:${port}/api/stop`;
 
   try {
     const response = await axios.post(url, answers, {

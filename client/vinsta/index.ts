@@ -5,7 +5,7 @@ import inquirer from "inquirer";
 import { createVirtualMachine, stopVirtualMachine, startVirtualMachine,
    removeVirtualMachine, checkInfoVirtualMachine, sshVirtualMachine,
    listallVirtualMachine, initVinsta, updateVinsta, backupVirtualMachine,
-   cloneVirtualMachine, restoreVirtualMachine, runServer, statusALLVirtualMachine} from "./cmd";
+   cloneVirtualMachine, restoreVirtualMachine, runServer, statusALLVirtualMachine, importExistingVM} from "./cmd";
 
 const figlet = require("figlet");
 
@@ -29,6 +29,7 @@ program
   .option("-l, --listall", "list all of the available virtual machine")
   .option("  , --status", "list status of all of the available virtual machine")
   .option("  , --ssh", "ssh into virtual machine")
+  .option("  , --import", "import existing virtual machine to database")
   .option("-u, --update", "update Vinsta to the latest version")
   .parse(process.argv);
 
@@ -113,5 +114,8 @@ if (process.argv.length <= 2) {
   }
   if (options.ssh) {
     sshVirtualMachine();
+  }
+  if (options.import) {
+    importExistingVM();
   }
 }

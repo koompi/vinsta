@@ -14,3 +14,4 @@ export * from "./cloneVirtualMachine";
 export * from "./backupVirtualMachine";
 export * from "./restoreVirtualMachine";
 export * from "./runServer";
+export * from "./importExistingVM";
