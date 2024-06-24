@@ -15,9 +15,11 @@ export async function retrieveServer() {
     // Form the MongoDB connection string using environment variables
     const { DATABASE_IP, DATABASE_PORT, DATABASE_PASSWORD } = process.env;
     // Connect to MongoDB
-    await mongoose.connect(`mongodb://admin:${DATABASE_PASSWORD}@${DATABASE_IP}:${DATABASE_PORT}/admin`);
-    // console.log("MongoDB connected successfully");
+    // Connect to MongoDB
+    const connectionString = `mongodb://admin:${encodeURIComponent}${DATABASE_PASSWORD}@${DATABASE_IP}:${DATABASE_PORT}/admin`;
 
+    await mongoose.connect(connectionString, {
+    });
     // Retrieve all servers from the database
     const servers = await Server.find({});
 
