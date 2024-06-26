@@ -15,7 +15,6 @@ setup_vinsta_server() {
   sudo git clone https://github.com/koompi/vinsta /opt/vinsta
   sudo chown -R -v $USER /opt/vinsta
   cd /opt/vinsta
-  git checkout vinsta-v2-redesign
   bun install
   bun run build
 }
