@@ -1,5 +1,5 @@
-import { executeCommand } from "../shells/executeCommand";
-import type { VMOptions } from "../types/VMOptionsType";
+import { executeCommand } from "../../shells/executeCommand";
+import type { VMOptions } from "../../types/VMOptionsType";
 
 export const startVirtualMachine = async (options: VMOptions): Promise<void> => {
   const { name = "koompi" } = options;

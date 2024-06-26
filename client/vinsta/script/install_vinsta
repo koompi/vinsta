@@ -10,28 +10,79 @@ check_bun_installed() {
   fi
 }
 
-# Function to download and set up vinsta
-setup_vinsta() {
-  local url="https://github.com/koompi/vinsta/raw/main/client/vinsta/out/index.js"
-  local destination="/usr/bin/vinsta"
-
-  echo "Downloading vinsta from $url..."
-  curl -L $url -o /tmp/vinsta
-
-  if [ $? -ne 0 ]; then
-    echo "Failed to download vinsta. Exiting."
-    exit 1
-  fi
-
-  echo "Moving vinsta to $destination..."
-  sudo mv /tmp/vinsta $destination
-
-  echo "Setting execute permission for $destination..."
-  sudo chmod +x $destination
-
-  echo "vinsta has been set up successfully."
+# Function to set up vinsta server
+setup_vinsta_server() {
+  sudo git clone https://github.com/koompi/vinsta /opt/vinsta
+  sudo chown -R -v $USER /opt/vinsta
+  cd /opt/vinsta
+  git checkout vinsta-v2-redesign
+  bun install
+  bun run build
 }
 
-# Check for bun and setup vinsta
+
+# Function to download and set up vinsta CLI
+setup_vinsta_cli() {
+  cd /opt/vinsta/client/vinsta
+  bun install
+  make install
+  sudo bun install -g punycode
+}
+
+# Function to install required packages on Arch Linux
+install_arch_packages() {
+  echo "Updating package database and installing required packages for Arch Linux..."
+  sudo pacman -Syu --needed --noconfirm curl wget virt-manager virt-viewer qemu-git qemu-arch-extra \
+  edk2-ovmf vde2 dnsmasq bridge-utils openbsd-netcat libguestfs \
+  guestfs-tools expect netplan
+
+  ## Enable the libvirt service
+  sudo systemctl enable --now libvirtd
+}
+
+# Function to install required packages on Ubuntu
+install_ubuntu_packages() {
+  local ubuntu_packages=(
+    curl
+    wget
+    virt-manager
+    virt-viewer
+    qemu-system-x86
+    qemu-kvm
+    libvirt-daemon-system
+    bridge-utils
+    virtinst
+    ovmf
+    vde2
+    ebtables
+    dnsmasq
+    netcat-openbsd
+    libguestfs-tools
+    expect
+    netplan
+  )
+
+  echo "Updating package database and installing required packages for Ubuntu..."
+  sudo apt update
+  sudo apt install -y "${ubuntu_packages[@]}"
+}
+
+# Main script
 check_bun_installed
-setup_vinsta
+
+if command -v pacman &>/dev/null; then
+  # Arch Linux detected
+  install_arch_packages
+elif command -v apt-get &>/dev/null || command -v apt &>/dev/null; then
+  # Ubuntu (and Debian-based) detected
+  install_ubuntu_packages
+else
+  echo "Unsupported distribution. Please install required packages manually."
+  exit 1
+fi
+
+setup_vinsta_server
+setup_vinsta_cli
+
+
+echo "Setup completed successfully."

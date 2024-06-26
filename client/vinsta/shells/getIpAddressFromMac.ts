@@ -1,7 +1,7 @@
 // getIpAddressFromMac.ts
 
 import { executeCommand } from '../shells/executeCommand';
-
+import { getIPFromCommandOutput } from '../../../shells/getIPFromCommandOutput';
 // Function to get IP address from MAC address
 export const getIpAddressFromMac = async (vmName: string): Promise<string | undefined> => {
     try {
@@ -10,7 +10,11 @@ export const getIpAddressFromMac = async (vmName: string): Promise<string | unde
         const interfaceName = interfaceNameOutput.trim();
 
         if (!interfaceName) {
-            throw new Error(`Bridge interface not found for VM "${vmName}"`);
+            // throw new Error(`Bridge interface not found for VM "${vmName}"`);
+            // When no bridge interface is found, it mean the interfaces should be br10 or default
+            const commandOutput = await executeCommand(`virsh domifaddr ${vmName}`)
+            const ipAddress = getIPFromCommandOutput(commandOutput);
+            return ipAddress
         }
 
         // Get MAC address of the VM dynamically

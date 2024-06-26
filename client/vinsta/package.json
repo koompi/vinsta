@@ -20,14 +20,25 @@
     "typescript": "^5.0.0"
   },
   "dependencies": {
+    "@types/bcrypt": "^5.0.2",
+    "@types/express-session": "^1.18.0",
+    "@types/prompt-sync": "^4.2.3",
     "@types/semver": "^7.5.8",
+    "aws-sdk": "^2.1642.0",
     "axios": "^1.7.2",
+    "bcrypt": "^5.1.1",
     "cli-table3": "^0.6.5",
     "commander": "^12.1.0",
     "express": "^4.19.2",
+    "express-session": "^1.18.0",
     "figlet": "^1.7.0",
     "inquirer": "^9.2.23",
+    "mock-aws-s3": "^4.0.2",
+    "nock": "^13.5.4",
+    "prompt-sync": "^4.2.0",
     "semver": "^7.6.2",
+    "sudo-prompt": "^9.2.1",
+    "telegraf": "^4.16.3",
     "vinsta": "."
   }
 }

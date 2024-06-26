@@ -1,5 +1,5 @@
-import { executeCommand } from "../shells/executeCommand";
-import { getIpAddressFromMac } from "../client/vinsta/shells/getIpAddressFromMac";
+import { executeCommand } from "../../shells/executeCommand";
+import { getIpAddressFromMac } from "../../client/vinsta/shells/getIpAddressFromMac";
 import Table from 'cli-table3';
 
 interface VirtualMachine {

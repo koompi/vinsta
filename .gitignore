@@ -1,9 +1,12 @@
 # Based on https://raw.githubusercontent.com/github/gitignore/main/Node.gitignore
 
+# Database
+database/data
+database/exported-db
+
 # Logs
 
 out
-backup
 tmp
 logs
 _.log

@@ -1,6 +1,5 @@
-import { executeCommand } from "../shells/executeCommand";
-import type { VMOptions } from "../types/VMOptionsType";
-import { delay } from "../utils/delay";
+import { executeCommand } from "../../shells/executeCommand";
+import type { VMOptions } from "../../types/VMOptionsType";
 
 export const removeVirtualMachine = async (
   options: VMOptions

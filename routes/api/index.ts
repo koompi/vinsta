@@ -1,14 +1,13 @@
 import type { Request, response, Response } from "express";
-import { createVirtualMachine } from "../../vm/createVirtualMachine";
-import { removeVirtualMachine } from "../../vm/removeVirtualMachine";
-import { startVirtualMachine } from "../../vm/startVirtualMachine";
-import { stopVirtualMachine } from "../../vm/stopVirtualMachine";
-import { checkInfoVirtualMachine } from "../../vm/checkInfoVirtualMachine";
-import { cloneVirtualMachine } from "../../vm/cloneVirtualMachine";
-import { listAllVirtualMachines } from "../../vm/listAllVirtualMachine";
-import { backupVirtualMachine } from "../../vm/backupVirtualMachine";
-import { restoreVirtualMachine } from "../../vm/restoreVirtualMachine";
-// import type { VMOptionsV2 } from '../../types/VMOptionsV2';
+import { createVirtualMachine } from "../../vm/create";
+import { removeVirtualMachine } from "../../vm/remove";
+import { startVirtualMachine } from "../../vm/start";
+import { stopVirtualMachine } from "../../vm/stop";
+import { checkInfoVirtualMachine } from "../../vm/checkinfo";
+import { cloneVirtualMachine } from "../../vm/clone";
+import { statusAllVirtualMachines } from "../../vm/status";
+import { backupVirtualMachine } from "../../vm/backup";
+import { restoreVirtualMachine } from "../../vm/restore";
 
 export const createVM = async (req: Request, res: Response) => {
 
@@ -113,12 +112,12 @@ export const cloneVM = async (req: Request, res: Response) => {
   }
 };
 
-export const listAllVM = async (req: Request, res: Response) => {
+export const statusAllVM = async (req: Request, res: Response) => {
   try {
-    const table = await listAllVirtualMachines();
-    res.json({ message: "Successfully listall the virtual machine", table });
+    const table = await statusAllVirtualMachines();
+    res.json({ message: "Successfully listall status of the virtual machine", table });
   } catch (error) {
-    res.status(500).json({ message: "Failed to list all virtual machines" });
+    res.status(500).json({ message: "Failed to list status all virtual machines" });
   }
 };
 

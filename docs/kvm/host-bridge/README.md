@@ -7,7 +7,7 @@ sudo pacman -Sy netplan # On ubuntu, Google it
 
 ## Step 1: Setting up netplan bridge
 
-Create /etc/netplan/01-kvmbridge.yml. Example:
+Create /etc/netplan/01-kvmbridge.yaml. Example:
 
 ```text
 network:
@@ -21,7 +21,7 @@ network:
       mtu: 1500
       parameters:
         stp: true
-        forward-delay: 15wwp0s21f0u3i4
+        forward-delay: 15
 ```
 
 <b>Notes</b>: Network interface should be changed, depending on your ethernet interfaces. Run:

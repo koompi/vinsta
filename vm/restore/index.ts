@@ -1,9 +1,9 @@
-import type { VMOptions } from '../types/VMOptionsType';
-import { executeCommand } from '../shells/executeCommand';
+import type { VMOptions } from '../../types/VMOptionsType';
+import { executeCommand } from '../../shells/executeCommand';
 import { promises as fs } from 'fs';
 import path from 'path';
-import { stopVirtualMachine } from './stopVirtualMachine';
-import { startVirtualMachine } from './startVirtualMachine';
+import { stopVirtualMachine } from '../stop';
+import { startVirtualMachine } from '../start';
 
 export const restoreVirtualMachine = async (
   options: VMOptions

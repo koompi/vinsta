@@ -1,8 +1,9 @@
-import { getIPFromCommandOutput } from "../shells/getIPFromCommandOutput";
-import { delay } from "../utils/delay";
-import type { VMOptions } from "../types/VMOptionsType";
-import { executeCommand } from "../shells/executeCommand";
-import { getIpAddressFromMac } from "../client/vinsta/shells/getIpAddressFromMac";
+import { executeCommand } from '../../shells/executeCommand';
+import { getIpAddressFromMac } from '../../client/vinsta/shells/getIpAddressFromMac';
+
+import type { VMOptions } from '../../types/VMOptionsType';
+
+
 
 // Define the type of the object being returned
 interface VMCreationResponse {
@@ -13,23 +14,25 @@ interface VMCreationResponse {
 // Function to create virtual machine
 export const createVirtualMachine = async (
   options: VMOptions
-): Promise<{ sshcmd?: string; sshUsername?: string; sshPassword?: string, }> => {
+): Promise<{ ipAddr: string; sshcmd?: string; sshUsername?: string; sshPassword?: string }> => {
   const {
     name,
-    iso = "koompi",
-    ram = "1024",
-    disk = "20G",
-    cpu = "1",
-    network = "default",
-    osVariant = "archlinux",
-    bootOption = "uefi",
-    arch = "x64",
+    iso = 'koompi',
+    ram = '1024',
+    disk = '20G',
+    cpu = '1',
+    network = 'default',
+    osVariant = 'archlinux',
+    bootOption = 'uefi',
+    arch = 'x64',
+    vmusername = 'admin',
+    vmpassword = '123',
   } = options;
 
   try {
     // Check if VM exists
     const vmExistsOutput = await executeCommand(`virsh dominfo ${name}`);
-    if (vmExistsOutput.includes("Name:")) {
+    if (vmExistsOutput.includes('Name:')) {
       throw new Error(`Virtual machine "${name}" already created`);
     }
   } catch (error) {
@@ -39,7 +42,7 @@ export const createVirtualMachine = async (
   try {
     // Validate RAM size format
     if (!ram.match(/^\d+$/)) {
-      throw new Error("Invalid RAM size format. Use a numeric value for RAM.");
+      throw new Error('Invalid RAM size format. Use a numeric value for RAM.');
     }
 
     // Validate disk size format
@@ -55,17 +58,14 @@ export const createVirtualMachine = async (
 
     // Determine firmware paths based on architecture
     const firmwarePath =
-      arch === "x86" ? "/usr/share/OVMF/ia32" : "/usr/share/OVMF/x64";
+      arch === 'x86' ? '/usr/share/OVMF/ia32' : '/usr/share/OVMF/x64';
     const loaderFile = `${firmwarePath}/OVMF_CODE.fd`;
     const nvramTemplateFile = `${firmwarePath}/OVMF_VARS.fd`;
-
-    // --noautoconsole \
-    // --noreboot`);
 
     // Build virt-install command
     let command: string = `virt-install --name ${name} --ram ${ram} --vcpus ${cpu} --disk path=${diskFile},format=qcow2 --network network=${network},model=virtio --os-variant=${osVariant} --features acpi=on,apic=on --noautoconsole`;
 
-    if (bootOption === "uefi") {
+    if (bootOption === 'uefi') {
       // Add UEFI firmware option
       command += ` --boot loader=${loaderFile},loader.readonly=yes,loader.type=pflash,nvram.template=${nvramTemplateFile}`;
     } else {
@@ -73,46 +73,37 @@ export const createVirtualMachine = async (
       command += ` --boot hd`;
     }
 
-    if (iso && iso !== "" && iso !== " ") {
+    if (iso && iso !== '' && iso !== ' ') {
       command += ` --cdrom iso/${iso}*.iso`;
     } else {
-      command += " --import";
+      command += ' --import';
     }
 
+    await executeCommand(command);
 
-    executeCommand(command);
-    // Delay for 10 seconds to allow the VM to start up
+    // Delay for 60 seconds to allow the VM to start up
     await new Promise(resolve => setTimeout(resolve, 60000));
 
     // Ensure the VM autostarts
     await executeCommand(`virsh autostart ${name}`);
 
-    // Delay for 10 seconds to allow the VM to start up
-    // await new Promise(resolve => setTimeout(resolve, 10000));
-    // await delay(10000);
-
     // Get the IP address of the VM
-    const ipAddress = await getIpAddressFromMac(`${name}`)
+    const ipAddress = await getIpAddressFromMac(name);
 
-    const sshCommand = ipAddress && iso.startsWith("koompi")
+    const sshCommand = ipAddress && iso.startsWith('koompi')
       ? `ssh koompilive@${ipAddress}`
       : undefined;
-    // Assign sshCommand to sshcmd
-    const sshcmd = sshCommand;
-    const sshUsername = "koompilive";
-    const sshPassword = "123";
 
     // Return an object containing success message, IP address (if found), and SSH command (if applicable)
     return {
-      sshcmd,
-      sshUsername,
-      sshPassword,
+      ipAddr: ipAddress || 'undefined',
+      sshcmd: sshCommand,
+      sshUsername: 'koompilive',
+      sshPassword: '123',
     };
-    // Return true if creation succeeded
-    // return !!ipAddress;
 
   } catch (error) {
-    console.error("An error occurred:", (error as Error).message);
+    console.error('An error occurred:', (error as Error).message);
     throw error;
   }
 };
