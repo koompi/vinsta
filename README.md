@@ -28,6 +28,13 @@ Vinsta empowers you to automate the provisioning, configuration, and management 
 
 ### Installation
 
+### Quick start
+
+```bash
+curl -fsSL https://github.com/koompi/vinsta/raw/main/client/vinsta/script/install_vinsta | bash
+```
+
+
 ### Choose your operating system:
 ### Installation on KOOMPI OS (Archlinux based)
 
