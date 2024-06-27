@@ -10,6 +10,8 @@ import { connectDB } from "../../../shells/connectDB";
 import { userSchema } from "../../../models/userSchema";
 import { sendOTP } from "../utils/verification/telegram/sendOTP";
 import { verifyOTP } from "../utils/verification/telegram/verifyOTP";
+const { Client } = require('ssh2');
+
 
 import promptSync from 'prompt-sync';
 const prompt = promptSync();
@@ -81,7 +83,6 @@ export async function sshVirtualMachine() {
       return;
     }
 
-
     const vmDetails = await VMOptionsModel.findOne({ name: answers.name });
     if (!vmDetails) {
       spinner.fail("Virtual machine not found.");
@@ -98,17 +99,20 @@ export async function sshVirtualMachine() {
     }
 
     const { vmusername, ipaddr } = vmDetails;
-    const sshCommand = `sshpass -p '${vmpassword}' ssh ${vmusername}@${ipaddr}`;
 
-    const options: SpawnOptions = {
-      shell: true,
-      stdio: "inherit",
-    };
+    
+    establishSSHConnection(ipaddr, "22", vmusername, vmpassword)
+        .then(() => {
+            console.log('SSH connection established');
+        })
+        .catch(error => {
+            console.log("Error: ", error);
+        });
 
-    const sshProcess = spawn(sshCommand, [], options);
+
     spinner.succeed("Authorized... \n Now ready to SSH into the VM");
 
-    sshProcess.on("close", (code) => {
+    process.on("close", (code: any) => {
       if (code !== 0) {
         spinner.fail("Failed to connect to VM");
       }
@@ -121,3 +125,23 @@ export async function sshVirtualMachine() {
   }
 }
 
+function establishSSHConnection(host: any, port: any, username: any, password: any) {
+    return new Promise((resolve, reject) => {
+        const conn = new Client();
+        conn.on('ready', () => {
+            console.log('Client :: ready');
+            conn.shell((err: any, stream: any) => {
+                if (err) throw err;
+                stream.on('close', () => {
+                    console.log('Stream :: close');
+                    conn.end();
+                }).on('data', (data: any) => {
+                    process.stdout.write(data);
+                });
+                process.stdin.pipe(stream);
+            });
+        }).on('error', (err: any) => {
+            reject(err);
+        }).connect({ host, port, username, password });
+    });
+}
