@@ -6,7 +6,7 @@ database/exported-db
 
 # Logs
 
-out
+#out
 tmp
 logs
 _.log

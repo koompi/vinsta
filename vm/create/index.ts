@@ -63,7 +63,7 @@ export const createVirtualMachine = async (
     const nvramTemplateFile = `${firmwarePath}/OVMF_VARS.fd`;
 
     // Build virt-install command
-    let command: string = `virt-install --name ${name} --ram ${ram} --vcpus ${cpu} --disk path=${diskFile},format=qcow2 --network network=${network},model=virtio --os-variant=${osVariant} --features acpi=on,apic=on --noautoconsole`;
+    let command: string = `virt-install --name ${name} --ram ${ram} --vcpus ${cpu} --disk path=${diskFile},format=qcow2 --network network=${network},model=virtio --os-variant=${osVariant} --features acpi=on,apic=on --noautoconsole --soundhw alsa`;
 
     if (bootOption === 'uefi') {
       // Add UEFI firmware option
