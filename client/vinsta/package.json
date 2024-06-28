@@ -6,15 +6,15 @@
   },
   "vinsta": "link:vinsta",
   "scripts": {
-    "build": "bun build --target=node ./index.ts --outdir ./out",
+    "build": "bun build --target=bun ./index.ts --outdir ./out",
     "start": "bun out/index.js"
   },
   "module": "./out/index.js",
   "type": "module",
   "devDependencies": {
     "@types/bun": "latest",
-    "@types/inquirer": "^9.0.7",
-    "@types/express": "latest"
+    "@types/express": "latest",
+    "@types/inquirer": "^9.0.7"
   },
   "peerDependencies": {
     "typescript": "^5.0.0"
@@ -35,8 +35,10 @@
     "inquirer": "^9.2.23",
     "mock-aws-s3": "^4.0.2",
     "nock": "^13.5.4",
+    "node-loader": "^2.0.0",
     "prompt-sync": "^4.2.0",
     "semver": "^7.6.2",
+    "ssh2": "^1.15.0",
     "sudo-prompt": "^9.2.1",
     "telegraf": "^4.16.3",
     "vinsta": "."
